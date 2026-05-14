@@ -1,3 +1,5 @@
+import { MakeswiftProvider } from '@makeswift/runtime/next';
+import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { setRequestLocale } from 'next-intl/server';
 import { PropsWithChildren } from 'react';
 
@@ -14,12 +16,12 @@ export default async function DefaultLayout({ params, children }: Props) {
   setRequestLocale(locale);
 
   return (
-    <>
+    <MakeswiftProvider siteVersion={await getSiteVersion()}>
       <Header />
 
       <main>{children}</main>
 
       <Footer />
-    </>
+    </MakeswiftProvider>
   );
 }
