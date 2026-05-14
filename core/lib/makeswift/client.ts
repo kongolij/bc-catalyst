@@ -1,3 +1,5 @@
-import { Makeswift } from '@makeswift/runtime/next/server';
+import { Makeswift } from '@makeswift/runtime/next';
 
-export const client = new Makeswift(process.env.MAKESWIFT_SITE_API_KEY!);
+import { runtime } from './runtime';
+
+export const client = new Makeswift(process.env.MAKESWIFT_SITE_API_KEY!, { runtime });
