@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from '~/components/link';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
@@ -34,7 +35,7 @@ export function ShowProductCard({ product }: Props) {
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
       {/* Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
+      <Link className="relative block aspect-square w-full overflow-hidden bg-gray-50" href={product.path}>
         {product.imageUrl ? (
           <Image
             alt={product.imageAlt ?? product.name}
@@ -46,11 +47,13 @@ export function ShowProductCard({ product }: Props) {
         ) : (
           <div className="flex h-full items-center justify-center text-gray-300">No image</div>
         )}
-      </div>
+      </Link>
 
       {/* Details */}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-sm font-semibold text-gray-900">{product.name}</h3>
+        <Link className="hover:underline" href={product.path}>
+          <h3 className="text-sm font-semibold text-gray-900">{product.name}</h3>
+        </Link>
         <p className="mt-1 text-xs text-gray-500">SKU: {product.sku}</p>
 
         {product.showPrice !== undefined && (

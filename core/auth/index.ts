@@ -84,6 +84,7 @@ const JwtCredentials = z.object({
 const SessionUpdate = z.object({
   user: z.object({
     cartId: cartIdSchema,
+    customerAccessToken: z.string().optional(),
   }),
 });
 
@@ -252,6 +253,9 @@ const config = {
           token.user = {
             ...token.user,
             cartId: parsedSession.data.user.cartId,
+            ...(parsedSession.data.user.customerAccessToken && {
+              customerAccessToken: parsedSession.data.user.customerAccessToken,
+            }),
           };
         }
       }

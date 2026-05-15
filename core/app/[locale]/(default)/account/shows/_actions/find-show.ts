@@ -3,7 +3,8 @@
 import { removeEdgesAndNodes } from '@bigcommerce/catalyst-client';
 import { z } from 'zod';
 
-import { getSessionCustomerAccessToken } from '~/auth';
+import { getSessionCustomerAccessToken, updateSession } from '~/auth';
+import { generateCustomerLoginApiJwt } from '~/auth/customer-login-api';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
 import { clearCartId } from '~/lib/cart';
@@ -17,6 +18,16 @@ const CustomerEntityIdQuery = graphql(`
   }
 `);
 
+const RefreshTokenMutation = graphql(`
+  mutation ShowsRefreshTokenMutation($jwt: String!) {
+    loginWithCustomerLoginJwt(jwt: $jwt) {
+      customerAccessToken {
+        value
+      }
+    }
+  }
+`);
+
 const ShowProductsQuery = graphql(`
   query ShowProductsQuery($entityIds: [Int!], $first: Int) {
     site {
@@ -26,6 +37,7 @@ const ShowProductsQuery = graphql(`
             entityId
             name
             sku
+            path
             description
             defaultImage {
               altText
@@ -43,6 +55,7 @@ export interface ShowProduct {
   variantEntityId?: number;
   name: string;
   sku: string;
+  path: string;
   imageUrl?: string;
   imageAlt?: string;
   description?: string;
@@ -141,9 +154,31 @@ export async function findShow(
   try {
     await bcRestPut(`/v3/customers`, [{ id: entityId, customer_group_id: customerGroup.id }]);
     groupAssigned = true;
-    await clearCartId();
   } catch {
     // Group assignment failed but we still show products
+  }
+
+  // Refresh the customer access token so BC's Storefront API picks up the new group
+  // immediately — without this, new carts still get base pricing until the token is re-issued
+  if (groupAssigned) {
+    try {
+      const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
+      const jwt = await generateCustomerLoginApiJwt(entityId, channelId);
+      const refreshResult = await client.fetch({
+        document: RefreshTokenMutation,
+        variables: { jwt },
+        fetchOptions: { cache: 'no-store' },
+      });
+      const freshCat = refreshResult.data?.loginWithCustomerLoginJwt?.customerAccessToken?.value;
+
+      if (freshCat) {
+        await updateSession({ user: { customerAccessToken: freshCat, cartId: null } });
+      } else {
+        await clearCartId();
+      }
+    } catch {
+      await clearCartId();
+    }
   }
 
   // 4. Fetch price list by name
@@ -232,6 +267,7 @@ export async function findShow(
         variantEntityId: record?.variant_id || undefined,
         name: product.name,
         sku: product.sku,
+        path: product.path,
         imageUrl: product.defaultImage?.url,
         imageAlt: product.defaultImage?.altText,
         description: product.description || undefined,
