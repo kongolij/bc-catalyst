@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server';
 import { z } from 'zod';
 
 import { anonymousSignIn, clearAnonymousSession } from '~/auth/anonymous-session';
+import { generateCustomerLoginApiJwt } from '~/auth/customer-login-api';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
 import { clearCartId, setCartId } from '~/lib/cart';
@@ -105,22 +106,60 @@ async function handleLoginCart(guestCartId?: string, loginResultCartId?: string)
 async function loginWithPassword(credentials: unknown): Promise<User | null> {
   const { email, password, cartId } = PasswordCredentials.parse(credentials);
 
+  // Use errorPolicy 'ignore' so a browser storefront token (with allowed_cors_origins)
+  // doesn't throw when customerAccessToken can't be returned in the body.
+  // We detect and handle the browser-token case below.
   const response = await client.fetch({
     document: LoginMutation,
     variables: { email, password, cartEntityId: cartId },
-    fetchOptions: {
-      cache: 'no-store',
-    },
+    fetchOptions: { cache: 'no-store' },
+    errorPolicy: 'ignore',
   });
 
-  if (response.errors && response.errors.length > 0) {
+  const result = response.data?.login;
+
+  if (!result?.customer) {
     return null;
   }
 
-  const result = response.data.login;
+  let accessToken = result.customerAccessToken?.value;
 
-  if (!result.customer || !result.customerAccessToken) {
-    return null;
+  // Browser-token fallback: customerAccessToken not returned in body.
+  // Try Customer Login JWT if BIGCOMMERCE_CLIENT_ID + BIGCOMMERCE_CLIENT_SECRET are set.
+  if (!accessToken) {
+    const clientId = process.env.BIGCOMMERCE_CLIENT_ID;
+    const clientSecret = process.env.BIGCOMMERCE_CLIENT_SECRET;
+    const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
+
+    if (clientId && clientSecret) {
+      try {
+        const jwt = await generateCustomerLoginApiJwt(result.customer.entityId, channelId);
+        const jwtResponse = await client.fetch({
+          document: LoginWithTokenMutation,
+          variables: { jwt, cartEntityId: cartId },
+          fetchOptions: { cache: 'no-store' },
+          errorPolicy: 'ignore',
+        });
+
+        accessToken =
+          jwtResponse.data?.loginWithCustomerLoginJwt?.customerAccessToken?.value;
+      } catch {
+        // JWT fallback failed; fall through to error below
+      }
+    }
+
+    if (!accessToken) {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[Auth] Login failed: customerAccessToken was not returned.\n' +
+          'Your BIGCOMMERCE_STOREFRONT_TOKEN is likely configured as a browser token ' +
+          '(allowed_cors_origins is set).\n' +
+          'Fix: create a new storefront token without allowed_cors_origins for server-to-server use.\n' +
+          'Alternative: add BIGCOMMERCE_CLIENT_ID + BIGCOMMERCE_CLIENT_SECRET for a JWT-based fallback.',
+      );
+
+      return null;
+    }
   }
 
   await handleLoginCart(cartId, result.cart?.entityId);
@@ -129,7 +168,7 @@ async function loginWithPassword(credentials: unknown): Promise<User | null> {
   return {
     name: `${result.customer.firstName} ${result.customer.lastName}`,
     email: result.customer.email,
-    customerAccessToken: result.customerAccessToken.value,
+    customerAccessToken: accessToken,
     cartId: result.cart?.entityId,
   };
 }

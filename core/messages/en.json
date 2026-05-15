@@ -141,7 +141,8 @@
       "logout": "Logout",
       "orders": "Orders",
       "settings": "Account",
-      "wishlists": "Wish lists"
+      "wishlists": "Wish lists",
+      "shows": "Find Show"
     },
     "Orders": {
       "title": "Orders",

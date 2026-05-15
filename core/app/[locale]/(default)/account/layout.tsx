@@ -24,6 +24,7 @@ export default async function Layout({ children, params }: Props) {
             { href: '/account/addresses/', label: t('addresses') },
             { href: '/account/settings/', label: t('settings') },
             { href: '/account/wishlists/', label: t('wishlists') },
+            { href: '/account/shows/', label: t('shows') },
             { href: '/logout', label: t('logout'), prefetch: 'none' },
           ]}
         />
