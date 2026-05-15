@@ -2,6 +2,9 @@ import bundleAnalyzer from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withMakeswift = (require('@makeswift/runtime/next/plugin') as (options?: object) => (config: NextConfig) => NextConfig)();
+
 import { writeBuildConfig } from './build-config/writer';
 import { client } from './client';
 import { graphql } from './client/graphql';
@@ -111,6 +114,9 @@ export default async (): Promise<NextConfig> => {
 
   // Apply withNextIntl to the config
   nextConfig = withNextIntl(nextConfig);
+
+  // Apply Makeswift plugin (adds preview-token rewrites and CORS headers)
+  nextConfig = withMakeswift(nextConfig);
 
   if (process.env.ANALYZE === 'true') {
     const withBundleAnalyzer = bundleAnalyzer();
