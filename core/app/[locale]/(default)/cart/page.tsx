@@ -93,9 +93,9 @@ export default async function Cart({ params }: Props) {
   const formattedLineItems = lineItems.map((item) => ({
     id: item.entityId,
     quantity: item.quantity,
-    price: format.number(item.listPrice.value, {
+    price: format.number(item.originalPrice.value, {
       style: 'currency',
-      currency: item.listPrice.currencyCode,
+      currency: item.originalPrice.currencyCode,
     }),
     subtitle: item.selectedOptions
       .map((option) => {
