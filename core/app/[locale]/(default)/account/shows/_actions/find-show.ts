@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { getSessionCustomerAccessToken } from '~/auth';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
+import { clearCartId } from '~/lib/cart';
 import { bcRestGet, bcRestPut } from '~/lib/bigcommerce-rest';
 
 const CustomerEntityIdQuery = graphql(`
@@ -140,6 +141,7 @@ export async function findShow(
   try {
     await bcRestPut(`/v3/customers`, [{ id: entityId, customer_group_id: customerGroup.id }]);
     groupAssigned = true;
+    await clearCartId();
   } catch {
     // Group assignment failed but we still show products
   }
