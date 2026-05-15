@@ -90,6 +90,17 @@ export default async function Cart({ params }: Props) {
 
   const lineItems = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
 
+  // DEBUG — remove after confirming correct price field
+  lineItems.forEach((item) => {
+    console.log('[cart price debug]', {
+      name: item.name,
+      listPrice: item.listPrice.value,
+      originalPrice: item.originalPrice.value,
+      extendedListPrice: item.extendedListPrice.value,
+      extendedSalePrice: item.extendedSalePrice.value,
+    });
+  });
+
   const formattedLineItems = lineItems.map((item) => ({
     id: item.entityId,
     quantity: item.quantity,
