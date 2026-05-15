@@ -31,6 +31,8 @@ export async function addShowProductToCart(
 
   const { productId, variantId } = result.data;
 
+  console.log('[show add-to-cart]', { productId, variantId });
+
   try {
     await addToOrCreateCart({
       lineItems: [

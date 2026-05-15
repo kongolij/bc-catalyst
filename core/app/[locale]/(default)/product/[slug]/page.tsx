@@ -142,6 +142,13 @@ export default async function Product({ params, searchParams }: Props) {
       return null;
     }
 
+    // DEBUG — remove after confirming price list applies
+    console.log('[pdp price debug]', {
+      basePrice: product.prices?.basePrice?.value,
+      price: product.prices?.price?.value,
+      salePrice: product.prices?.salePrice?.value,
+    });
+
     return pricesTransformer(product.prices, format) ?? null;
   });
 
