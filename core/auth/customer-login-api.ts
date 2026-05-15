@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import { SignJWT } from 'jose';
 
 /**
@@ -43,7 +42,7 @@ export const generateCustomerLoginApiJwt = async (
   const payload = {
     iss: clientId,
     iat: Math.floor(Date.now() / 1000),
-    jti: randomUUID(),
+    jti: crypto.randomUUID(),
     operation: 'customer_login',
     store_hash: storeHash,
     customer_id: Math.floor(customerId),
