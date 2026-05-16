@@ -29,7 +29,7 @@ interface BcProduct {
 interface ManualProduct {
   name: string;
   price: string;
-  image: { url: string; dimensions: { width: number; height: number } } | null;
+  image: string | undefined;
   href: { href: string } | null;
   badge: string;
   showBadge: boolean;
@@ -149,12 +149,12 @@ function ProductGrid({
               <li key={idx}>
                 <a className="group block" href={product.href?.href ?? '#'}>
                   <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-[hsl(var(--contrast-100))]">
-                    {product.image?.url ? (
+                    {product.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        src={product.image.url}
+                        src={product.image}
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-[hsl(var(--contrast-300))]">
