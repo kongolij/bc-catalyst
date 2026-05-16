@@ -125,6 +125,8 @@ export default async function Product({ params, searchParams }: Props) {
 
     const currencyCode = await getPreferredCurrencyCode();
 
+    console.log('[pdp debug] currencyCode:', currencyCode, 'hasCAT:', !!customerAccessToken);
+
     const variables = {
       entityId: Number(productId),
       optionValueIds,
