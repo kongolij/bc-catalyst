@@ -9,7 +9,7 @@ interface Slide {
   title: string;
   description: string;
   showDescription: boolean;
-  image: { url: string; dimensions: { width: number; height: number } } | null;
+  image: string | undefined;
   ctaLabel: string;
   ctaHref: { href: string } | null;
   ctaVariant: string;
@@ -44,12 +44,12 @@ function HeroBanner({ slides = [], className }: Props) {
         className,
       )}
     >
-      {slide?.image?.url && (
+      {slide?.image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={slide.title}
           className="absolute inset-0 h-full w-full object-cover"
-          src={slide.image.url}
+          src={slide.image}
         />
       )}
 
