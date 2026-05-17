@@ -1,40 +1,20 @@
 'use client';
 
-import { Link } from '~/components/link';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-
 import { Image } from '~/components/image';
+import { Link } from '~/components/link';
 
-import { addShowProductToCart, AddToCartState } from '../_actions/add-to-cart';
 import type { ShowProduct } from '../_actions/find-show';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      className="mt-3 w-full rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-      disabled={pending}
-      type="submit"
-    >
-      {pending ? 'Adding…' : 'Add to Cart'}
-    </button>
-  );
-}
 
 interface Props {
   product: ShowProduct;
 }
 
-const initialState: AddToCartState = { status: 'idle' };
-
 export function ShowProductCard({ product }: Props) {
-  const [state, formAction] = useActionState(addShowProductToCart, initialState);
+  const formatUSD = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
-      {/* Image */}
       <Link className="relative block aspect-square w-full overflow-hidden bg-gray-50" href={product.path}>
         {product.imageUrl ? (
           <Image
@@ -49,18 +29,23 @@ export function ShowProductCard({ product }: Props) {
         )}
       </Link>
 
-      {/* Details */}
       <div className="flex flex-1 flex-col p-4">
         <Link className="hover:underline" href={product.path}>
           <h3 className="text-sm font-semibold text-gray-900">{product.name}</h3>
         </Link>
         <p className="mt-1 text-xs text-gray-500">SKU: {product.sku}</p>
 
-        {product.showPrice !== undefined && (
-          <p className="mt-2 text-base font-bold text-gray-900">
-            {product.currency ? `${product.currency.toUpperCase()} ` : ''}
-            {product.showPrice.toFixed(2)}
-          </p>
+        {product.isMultiVariant ? (
+          product.priceMin !== undefined && product.priceMax !== undefined && (
+            <p className="mt-2 text-base font-bold text-gray-900">
+              {formatUSD(product.priceMin)}
+              {product.priceMin !== product.priceMax && ` – ${formatUSD(product.priceMax)}`}
+            </p>
+          )
+        ) : (
+          product.showPrice !== undefined && (
+            <p className="mt-2 text-base font-bold text-gray-900">{formatUSD(product.showPrice)}</p>
+          )
         )}
 
         {product.description && (
@@ -71,24 +56,12 @@ export function ShowProductCard({ product }: Props) {
           />
         )}
 
-        {/* Add to cart form */}
-        <form action={formAction} className="mt-auto">
-          <input name="productId" type="hidden" value={product.entityId} />
-          {product.variantEntityId && (
-            <input name="variantId" type="hidden" value={product.variantEntityId} />
-          )}
-          <SubmitButton />
-        </form>
-
-        {state.status !== 'idle' && (
-          <p
-            className={`mt-2 text-center text-xs ${
-              state.status === 'success' ? 'text-green-600' : 'text-red-600'
-            }`}
-          >
-            {state.message}
-          </p>
-        )}
+        <Link
+          className="mt-auto mt-3 block w-full rounded bg-black px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800"
+          href={product.path}
+        >
+          Select Options
+        </Link>
       </div>
     </div>
   );

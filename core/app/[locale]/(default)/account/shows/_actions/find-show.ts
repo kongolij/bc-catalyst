@@ -52,7 +52,6 @@ const ShowProductsQuery = graphql(`
 
 export interface ShowProduct {
   entityId: number;
-  variantEntityId?: number;
   name: string;
   sku: string;
   path: string;
@@ -60,7 +59,9 @@ export interface ShowProduct {
   imageAlt?: string;
   description?: string;
   showPrice?: number;
-  currency?: string;
+  isMultiVariant: boolean;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export interface FindShowState {
@@ -228,16 +229,17 @@ export async function findShow(
     };
   }
 
-  // 6. Deduplicate by product_id
-  const productRecordMap = new Map<number, PriceListRecord>();
+  // 6. Group all variant records by product_id
+  const productRecordsMap = new Map<number, PriceListRecord[]>();
 
   for (const record of records) {
-    if (record.product_id && !productRecordMap.has(record.product_id)) {
-      productRecordMap.set(record.product_id, record);
+    if (record.product_id) {
+      const existing = productRecordsMap.get(record.product_id) ?? [];
+      productRecordsMap.set(record.product_id, [...existing, record]);
     }
   }
 
-  const productIds = Array.from(productRecordMap.keys());
+  const productIds = Array.from(productRecordsMap.keys());
 
   if (productIds.length === 0) {
     return {
@@ -260,19 +262,27 @@ export async function findShow(
     });
 
     products = removeEdgesAndNodes(productsResponse.data.site.products).map((product) => {
-      const record = productRecordMap.get(product.entityId);
+      const productRecords = productRecordsMap.get(product.entityId) ?? [];
+      const prices = productRecords
+        .map((r) => r.price ?? r.sale_price)
+        .filter((p): p is number => p !== undefined);
+
+      const priceMin = prices.length > 0 ? Math.min(...prices) : undefined;
+      const priceMax = prices.length > 0 ? Math.max(...prices) : undefined;
+      const isMultiVariant = productRecords.length > 1;
 
       return {
         entityId: product.entityId,
-        variantEntityId: record?.variant_id || undefined,
         name: product.name,
         sku: product.sku,
         path: product.path,
         imageUrl: product.defaultImage?.url,
         imageAlt: product.defaultImage?.altText,
         description: product.description || undefined,
-        showPrice: record?.price ?? record?.sale_price,
-        currency: record?.currency,
+        showPrice: priceMin,
+        isMultiVariant,
+        priceMin,
+        priceMax,
       };
     });
   } catch {

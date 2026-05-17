@@ -13,39 +13,35 @@ export const pricesTransformer = (
     return undefined;
   }
 
+  const currency = prices.price.currencyCode;
   const isPriceRange = prices.priceRange.min.value !== prices.priceRange.max.value;
-  const isSalePrice = prices.salePrice?.value !== prices.basePrice?.value;
+  const isSalePrice = prices.salePrice != null && prices.salePrice.value !== prices.basePrice?.value;
+  const isPriceListDiscount =
+    !isSalePrice && prices.basePrice != null && prices.price.value < prices.basePrice.value;
 
   if (isPriceRange) {
     return {
       type: 'range',
-      minValue: format.number(prices.priceRange.min.value, {
-        style: 'currency',
-        currency: prices.price.currencyCode,
-      }),
-      maxValue: format.number(prices.priceRange.max.value, {
-        style: 'currency',
-        currency: prices.price.currencyCode,
-      }),
+      minValue: format.number(prices.priceRange.min.value, { style: 'currency', currency }),
+      maxValue: format.number(prices.priceRange.max.value, { style: 'currency', currency }),
     };
   }
 
   if (isSalePrice && prices.salePrice && prices.basePrice) {
     return {
       type: 'sale',
-      previousValue: format.number(prices.basePrice.value, {
-        style: 'currency',
-        currency: prices.price.currencyCode,
-      }),
-      currentValue: format.number(prices.price.value, {
-        style: 'currency',
-        currency: prices.price.currencyCode,
-      }),
+      previousValue: format.number(prices.basePrice.value, { style: 'currency', currency }),
+      currentValue: format.number(prices.price.value, { style: 'currency', currency }),
     };
   }
 
-  return format.number(prices.price.value, {
-    style: 'currency',
-    currency: prices.price.currencyCode,
-  });
+  if (isPriceListDiscount && prices.basePrice) {
+    return {
+      type: 'sale',
+      previousValue: format.number(prices.basePrice.value, { style: 'currency', currency }),
+      currentValue: format.number(prices.price.value, { style: 'currency', currency }),
+    };
+  }
+
+  return format.number(prices.price.value, { style: 'currency', currency });
 };

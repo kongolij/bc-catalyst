@@ -123,9 +123,7 @@ export default async function Product({ params, searchParams }: Props) {
         (option) => !Number.isNaN(option.optionEntityId) && !Number.isNaN(option.valueEntityId),
       );
 
-    const currencyCode = await getPreferredCurrencyCode();
-
-    console.log('[pdp debug] currencyCode:', currencyCode, 'hasCAT:', !!customerAccessToken);
+    const currencyCode = (await getPreferredCurrencyCode()) ?? 'USD';
 
     const variables = {
       entityId: Number(productId),
