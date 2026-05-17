@@ -263,13 +263,20 @@ export async function findShow(
 
     products = removeEdgesAndNodes(productsResponse.data.site.products).map((product) => {
       const productRecords = productRecordsMap.get(product.entityId) ?? [];
-      const prices = productRecords
+
+      console.log(`[show-prices] product ${product.entityId} records:`, productRecords.map((r) => ({ variant: r.variant_id, price: r.price, currency: r.currency })));
+
+      // Only use CAD records for price range calculation
+      const cadRecords = productRecords.filter(
+        (r) => !r.currency || r.currency.toUpperCase() === 'CAD',
+      );
+      const prices = cadRecords
         .map((r) => r.price ?? r.sale_price)
         .filter((p): p is number => p !== undefined);
 
       const priceMin = prices.length > 0 ? Math.min(...prices) : undefined;
       const priceMax = prices.length > 0 ? Math.max(...prices) : undefined;
-      const isMultiVariant = productRecords.length > 1;
+      const isMultiVariant = cadRecords.length > 1;
 
       return {
         entityId: product.entityId,
