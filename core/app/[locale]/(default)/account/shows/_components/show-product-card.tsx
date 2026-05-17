@@ -10,8 +10,8 @@ interface Props {
 }
 
 export function ShowProductCard({ product }: Props) {
-  const formatUSD = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  const formatCAD = (value: number) =>
+    new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value);
 
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -38,13 +38,13 @@ export function ShowProductCard({ product }: Props) {
         {product.isMultiVariant ? (
           product.priceMin !== undefined && product.priceMax !== undefined && (
             <p className="mt-2 text-base font-bold text-gray-900">
-              {formatUSD(product.priceMin)}
-              {product.priceMin !== product.priceMax && ` – ${formatUSD(product.priceMax)}`}
+              {formatCAD(product.priceMin)}
+              {product.priceMin !== product.priceMax && ` – ${formatCAD(product.priceMax)}`}
             </p>
           )
         ) : (
           product.showPrice !== undefined && (
-            <p className="mt-2 text-base font-bold text-gray-900">{formatUSD(product.showPrice)}</p>
+            <p className="mt-2 text-base font-bold text-gray-900">{formatCAD(product.showPrice)}</p>
           )
         )}
 

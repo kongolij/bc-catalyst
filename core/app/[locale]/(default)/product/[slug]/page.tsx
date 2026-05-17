@@ -123,7 +123,7 @@ export default async function Product({ params, searchParams }: Props) {
         (option) => !Number.isNaN(option.optionEntityId) && !Number.isNaN(option.valueEntityId),
       );
 
-    const currencyCode = (await getPreferredCurrencyCode()) ?? 'USD';
+    const currencyCode = (await getPreferredCurrencyCode()) ?? 'CAD';
 
     const variables = {
       entityId: Number(productId),
