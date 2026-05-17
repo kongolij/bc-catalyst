@@ -52,6 +52,7 @@ const ShowProductsQuery = graphql(`
 
 export interface ShowProduct {
   entityId: number;
+  variantEntityId?: number;
   name: string;
   sku: string;
   path: string;
@@ -296,6 +297,7 @@ export async function findShow(
 
       return {
         entityId: product.entityId,
+        variantEntityId: !isMultiVariant ? cadRecords[0]?.variant_id : undefined,
         name: product.name,
         sku: product.sku,
         path: product.path,

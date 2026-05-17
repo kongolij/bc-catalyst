@@ -1,15 +1,37 @@
 'use client';
 
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
+
 import { Image } from '~/components/image';
 import { Link } from '~/components/link';
 
+import { addShowProductToCart, AddToCartState } from '../_actions/add-to-cart';
 import type { ShowProduct } from '../_actions/find-show';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      className="mt-auto mt-3 w-full rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={pending}
+      type="submit"
+    >
+      {pending ? 'Adding…' : 'Add to Cart'}
+    </button>
+  );
+}
 
 interface Props {
   product: ShowProduct;
 }
 
+const initialState: AddToCartState = { status: 'idle' };
+
 export function ShowProductCard({ product }: Props) {
+  const [state, formAction] = useActionState(addShowProductToCart, initialState);
+
   const formatCAD = (value: number) =>
     new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(value);
 
@@ -56,12 +78,32 @@ export function ShowProductCard({ product }: Props) {
           />
         )}
 
-        <Link
-          className="mt-auto mt-3 block w-full rounded bg-black px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800"
-          href={product.path}
-        >
-          Select Options
-        </Link>
+        {product.isMultiVariant ? (
+          <Link
+            className="mt-auto mt-3 block w-full rounded bg-black px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800"
+            href={product.path}
+          >
+            Select Options
+          </Link>
+        ) : (
+          <form action={formAction}>
+            <input name="productId" type="hidden" value={product.entityId} />
+            {product.variantEntityId && (
+              <input name="variantId" type="hidden" value={product.variantEntityId} />
+            )}
+            <SubmitButton />
+          </form>
+        )}
+
+        {!product.isMultiVariant && state.status !== 'idle' && (
+          <p
+            className={`mt-2 text-center text-xs ${
+              state.status === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}
+          >
+            {state.message}
+          </p>
+        )}
       </div>
     </div>
   );
