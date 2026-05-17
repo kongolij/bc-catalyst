@@ -78,6 +78,11 @@ interface V2CustomerGroup {
   name: string;
 }
 
+interface V2Customer {
+  id: number;
+  customer_group_id: number;
+}
+
 interface V3Response<T> {
   data: T[];
 }
@@ -149,36 +154,47 @@ export async function findShow(
     return { status: 'error', message: 'Unable to identify your account.' };
   }
 
-  // 3. Assign customer group via v3 REST API
+  // 3. Check current group — skip assignment and token refresh if already in this show's group
   let groupAssigned = false;
+  let alreadyInGroup = false;
 
   try {
-    await bcRestPut(`/v3/customers`, [{ id: entityId, customer_group_id: customerGroup.id }]);
-    groupAssigned = true;
+    const customerDetails = await bcRestGet<V2Customer>(`/v2/customers/${entityId}`);
+
+    alreadyInGroup = customerDetails.customer_group_id === customerGroup.id;
   } catch {
-    // Group assignment failed but we still show products
+    // Can't verify current group — proceed with assignment
   }
 
-  // Refresh the customer access token so BC's Storefront API picks up the new group
-  // immediately — without this, new carts still get base pricing until the token is re-issued
-  if (groupAssigned) {
+  if (!alreadyInGroup) {
     try {
-      const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
-      const jwt = await generateCustomerLoginApiJwt(entityId, channelId);
-      const refreshResult = await client.fetch({
-        document: RefreshTokenMutation,
-        variables: { jwt },
-        fetchOptions: { cache: 'no-store' },
-      });
-      const freshCat = refreshResult.data?.loginWithCustomerLoginJwt?.customerAccessToken?.value;
+      await bcRestPut(`/v3/customers`, [{ id: entityId, customer_group_id: customerGroup.id }]);
+      groupAssigned = true;
+    } catch {
+      // Group assignment failed but we still show products
+    }
 
-      if (freshCat) {
-        await updateSession({ user: { customerAccessToken: freshCat, cartId: null } });
-      } else {
+    // Refresh token so BC picks up the new group immediately.
+    // Only done when group actually changed — this is what clears the cart.
+    if (groupAssigned) {
+      try {
+        const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
+        const jwt = await generateCustomerLoginApiJwt(entityId, channelId);
+        const refreshResult = await client.fetch({
+          document: RefreshTokenMutation,
+          variables: { jwt },
+          fetchOptions: { cache: 'no-store' },
+        });
+        const freshCat = refreshResult.data?.loginWithCustomerLoginJwt?.customerAccessToken?.value;
+
+        if (freshCat) {
+          await updateSession({ user: { customerAccessToken: freshCat, cartId: null } });
+        } else {
+          await clearCartId();
+        }
+      } catch {
         await clearCartId();
       }
-    } catch {
-      await clearCartId();
     }
   }
 
