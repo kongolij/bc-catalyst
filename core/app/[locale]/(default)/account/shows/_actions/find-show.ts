@@ -7,7 +7,6 @@ import { getSessionCustomerAccessToken, updateSession } from '~/auth';
 import { generateCustomerLoginApiJwt } from '~/auth/customer-login-api';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
-import { clearCartId } from '~/lib/cart';
 import { bcRestGet, bcRestPut } from '~/lib/bigcommerce-rest';
 
 const CustomerEntityIdQuery = graphql(`
@@ -175,8 +174,8 @@ export async function findShow(
       // Group assignment failed but we still show products
     }
 
-    // Refresh token so BC picks up the new group immediately.
-    // Only done when group actually changed — this is what clears the cart.
+    // Refresh token so BC picks up the new group/pricing immediately.
+    // Cart is intentionally kept so items from different shows accumulate with locked prices.
     if (groupAssigned) {
       try {
         const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
@@ -189,12 +188,11 @@ export async function findShow(
         const freshCat = refreshResult.data?.loginWithCustomerLoginJwt?.customerAccessToken?.value;
 
         if (freshCat) {
-          await updateSession({ user: { customerAccessToken: freshCat, cartId: null } });
-        } else {
-          await clearCartId();
+          await updateSession({ user: { customerAccessToken: freshCat } });
         }
       } catch {
-        await clearCartId();
+        // Token refresh failed — group assignment still went through, pricing
+        // will update on next full login. Cart is preserved regardless.
       }
     }
   }

@@ -1,10 +1,8 @@
 'use server';
 
-import { BigCommerceAPIError, BigCommerceGQLError } from '@bigcommerce/catalyst-client';
 import { z } from 'zod';
 
-import { addToOrCreateCart } from '~/lib/cart';
-import { MissingCartError } from '~/lib/cart/error';
+import { addShowItemToCart } from '~/lib/cart/add-show-item-to-cart';
 
 export interface AddToCartState {
   status: 'idle' | 'success' | 'error';
@@ -14,6 +12,7 @@ export interface AddToCartState {
 const schema = z.object({
   productId: z.coerce.number(),
   variantId: z.coerce.number().optional(),
+  showPrice: z.coerce.number(),
 });
 
 export async function addShowProductToCart(
@@ -23,45 +22,23 @@ export async function addShowProductToCart(
   const result = schema.safeParse({
     productId: formData.get('productId'),
     variantId: formData.get('variantId') || undefined,
+    showPrice: formData.get('showPrice'),
   });
 
   if (!result.success) {
     return { status: 'error', message: 'Invalid product data.' };
   }
 
-  const { productId, variantId } = result.data;
+  const { productId, variantId, showPrice } = result.data;
 
-  console.log('[show add-to-cart]', { productId, variantId });
+  console.log('[show add-to-cart]', { productId, variantId, showPrice });
 
   try {
-    await addToOrCreateCart({
-      lineItems: [
-        {
-          productEntityId: productId,
-          variantEntityId: variantId,
-          quantity: 1,
-        },
-      ],
-    });
+    await addShowItemToCart(productId, variantId, showPrice);
 
     return { status: 'success', message: 'Added to cart!' };
   } catch (error) {
-    if (error instanceof MissingCartError) {
-      return { status: 'error', message: 'Cart not found. Please try again.' };
-    }
-
-    if (error instanceof BigCommerceGQLError) {
-      return {
-        status: 'error',
-        message: error.message.includes('variant ID is required')
-          ? 'This product requires a variant selection.'
-          : 'Failed to add to cart.',
-      };
-    }
-
-    if (error instanceof BigCommerceAPIError) {
-      return { status: 'error', message: 'Failed to add to cart.' };
-    }
+    console.error('[show add-to-cart] error:', error);
 
     return { status: 'error', message: 'Failed to add to cart.' };
   }

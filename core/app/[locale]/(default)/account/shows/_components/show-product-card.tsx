@@ -91,6 +91,9 @@ export function ShowProductCard({ product }: Props) {
             {product.variantEntityId && (
               <input name="variantId" type="hidden" value={product.variantEntityId} />
             )}
+            {product.showPrice !== undefined && (
+              <input name="showPrice" type="hidden" value={product.showPrice} />
+            )}
             <SubmitButton />
           </form>
         )}
