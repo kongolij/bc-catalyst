@@ -13,6 +13,7 @@ const schema = z.object({
   productId: z.coerce.number(),
   variantId: z.coerce.number().optional(),
   showPrice: z.coerce.number(),
+  showId: z.string().min(1),
 });
 
 export async function addShowProductToCart(
@@ -23,18 +24,19 @@ export async function addShowProductToCart(
     productId: formData.get('productId'),
     variantId: formData.get('variantId') || undefined,
     showPrice: formData.get('showPrice'),
+    showId: formData.get('showId'),
   });
 
   if (!result.success) {
     return { status: 'error', message: 'Invalid product data.' };
   }
 
-  const { productId, variantId, showPrice } = result.data;
+  const { productId, variantId, showPrice, showId } = result.data;
 
-  console.log('[show add-to-cart]', { productId, variantId, showPrice });
+  console.log('[show add-to-cart]', { productId, variantId, showPrice, showId });
 
   try {
-    await addShowItemToCart(productId, variantId, showPrice);
+    await addShowItemToCart(productId, variantId, showPrice, showId);
 
     return { status: 'success', message: 'Added to cart!' };
   } catch (error) {

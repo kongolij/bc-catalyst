@@ -68,6 +68,7 @@ export interface FindShowState {
   status: 'idle' | 'success' | 'error';
   message?: string;
   groupAssigned?: boolean;
+  showId?: string;
   products?: ShowProduct[];
 }
 
@@ -320,6 +321,7 @@ export async function findShow(
   return {
     status: 'success',
     groupAssigned,
+    showId,
     message: `You're set up for show "${showId}". ${products.length} product${products.length === 1 ? '' : 's'} available.`,
     products,
   };

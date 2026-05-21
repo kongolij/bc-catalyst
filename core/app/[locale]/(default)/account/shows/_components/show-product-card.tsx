@@ -25,11 +25,12 @@ function SubmitButton() {
 
 interface Props {
   product: ShowProduct;
+  showId: string;
 }
 
 const initialState: AddToCartState = { status: 'idle' };
 
-export function ShowProductCard({ product }: Props) {
+export function ShowProductCard({ product, showId }: Props) {
   const [state, formAction] = useActionState(addShowProductToCart, initialState);
 
   const formatCAD = (value: number) =>
@@ -94,6 +95,7 @@ export function ShowProductCard({ product }: Props) {
             {product.showPrice !== undefined && (
               <input name="showPrice" type="hidden" value={product.showPrice} />
             )}
+            <input name="showId" type="hidden" value={showId} />
             <SubmitButton />
           </form>
         )}

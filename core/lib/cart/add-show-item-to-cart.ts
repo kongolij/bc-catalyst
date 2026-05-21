@@ -6,7 +6,7 @@ import { getSessionCustomerAccessToken } from '~/auth';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
 import { TAGS } from '~/client/tags';
-import { bcRestPost } from '~/lib/bigcommerce-rest';
+import { bcRestGet, bcRestPost } from '~/lib/bigcommerce-rest';
 
 import { getCartId, setCartId } from '.';
 import { validateCartId } from './validate-cart';
@@ -19,30 +19,62 @@ const CustomerEntityIdQuery = graphql(`
   }
 `);
 
-interface RestCartLineItem {
-  product_id: number;
-  variant_id?: number;
-  quantity: number;
-  list_price: number;
+interface RestModifier {
+  id: number;
+  display_name: string;
+}
+
+interface RestModifierListResponse {
+  data: RestModifier[];
+}
+
+interface RestModifierCreateResponse {
+  data: RestModifier;
 }
 
 interface RestCartResponse {
-  data: {
-    id: string;
-  };
+  data: { id: string };
+}
+
+const SHOW_REF_MODIFIER_NAME = 'show-ref';
+
+// Returns the modifier's option_id, creating it on the product if it doesn't exist yet.
+async function getOrCreateShowModifier(productId: number): Promise<number> {
+  const existing = await bcRestGet<RestModifierListResponse>(
+    `/v3/catalog/products/${productId}/modifiers`,
+  );
+  const found = existing.data.find((m) => m.display_name === SHOW_REF_MODIFIER_NAME);
+
+  if (found) return found.id;
+
+  const created = await bcRestPost<RestModifierCreateResponse>(
+    `/v3/catalog/products/${productId}/modifiers`,
+    {
+      type: 'text',
+      required: false,
+      display_name: SHOW_REF_MODIFIER_NAME,
+      config: { default_value: '' },
+    },
+  );
+
+  return created.data.id;
 }
 
 export async function addShowItemToCart(
   productId: number,
   variantId: number | undefined,
   listPrice: number,
+  showId: string,
 ): Promise<void> {
-  const lineItems: RestCartLineItem[] = [
+  const modifierOptionId = await getOrCreateShowModifier(productId);
+
+  const lineItems = [
     {
       product_id: productId,
       ...(variantId !== undefined && { variant_id: variantId }),
       quantity: 1,
       list_price: listPrice,
+      option_selections: [{ option_id: modifierOptionId, option_value: showId }],
     },
   ];
 
