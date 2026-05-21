@@ -43,9 +43,18 @@ async function getOrCreateShowModifier(productId: number): Promise<number> {
   const existing = await bcRestGet<RestModifierListResponse>(
     `/v3/catalog/products/${productId}/modifiers`,
   );
+
+  console.log(`[show-cart] product ${productId} modifiers:`, JSON.stringify(existing.data));
+
   const found = existing.data.find((m) => m.display_name === SHOW_REF_MODIFIER_NAME);
 
-  if (found) return found.id;
+  if (found) {
+    console.log(`[show-cart] found existing modifier id=${found.id}`);
+
+    return found.id;
+  }
+
+  console.log(`[show-cart] creating modifier on product ${productId}`);
 
   const created = await bcRestPost<RestModifierCreateResponse>(
     `/v3/catalog/products/${productId}/modifiers`,
@@ -56,6 +65,8 @@ async function getOrCreateShowModifier(productId: number): Promise<number> {
       config: { default_value: '' },
     },
   );
+
+  console.log(`[show-cart] created modifier:`, JSON.stringify(created.data));
 
   return created.data.id;
 }
@@ -78,13 +89,19 @@ export async function addShowItemToCart(
     },
   ];
 
+  console.log(`[show-cart] line items to send:`, JSON.stringify(lineItems));
+
   const cartId = await getCartId();
   const cart = await validateCartId(cartId);
 
   if (cart) {
-    await bcRestPost<RestCartResponse>(`/v3/carts/${cart.entityId}/items`, {
+    console.log(`[show-cart] adding to existing cart ${cart.entityId}`);
+
+    const res = await bcRestPost<unknown>(`/v3/carts/${cart.entityId}/items`, {
       line_items: lineItems,
     });
+
+    console.log(`[show-cart] BC add-items response:`, JSON.stringify(res));
     unstable_expireTag(TAGS.cart);
 
     return;
@@ -114,7 +131,11 @@ export async function addShowItemToCart(
     createBody.customer_id = customerId;
   }
 
+  console.log(`[show-cart] creating new cart, body:`, JSON.stringify(createBody));
+
   const response = await bcRestPost<RestCartResponse>('/v3/carts', createBody);
+
+  console.log(`[show-cart] new cart id:`, response.data?.id);
 
   await setCartId(response.data.id);
   unstable_expireTag(TAGS.cart);
