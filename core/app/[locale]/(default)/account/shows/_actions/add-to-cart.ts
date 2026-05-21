@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 
-import { addShowItemToCart } from '~/lib/cart/add-show-item-to-cart';
+import { addToShowCart } from '~/lib/show-cart';
 
 export interface AddToCartState {
   status: 'idle' | 'success' | 'error';
@@ -14,6 +14,9 @@ const schema = z.object({
   variantId: z.coerce.number().optional(),
   showPrice: z.coerce.number(),
   showId: z.string().min(1),
+  name: z.string(),
+  sku: z.string(),
+  imageUrl: z.string().optional(),
 });
 
 export async function addShowProductToCart(
@@ -25,23 +28,33 @@ export async function addShowProductToCart(
     variantId: formData.get('variantId') || undefined,
     showPrice: formData.get('showPrice'),
     showId: formData.get('showId'),
+    name: formData.get('name'),
+    sku: formData.get('sku'),
+    imageUrl: formData.get('imageUrl') || undefined,
   });
 
   if (!result.success) {
     return { status: 'error', message: 'Invalid product data.' };
   }
 
-  const { productId, variantId, showPrice, showId } = result.data;
-
-  console.log('[show add-to-cart]', { productId, variantId, showPrice, showId });
+  const { productId, variantId, showPrice, showId, name, sku, imageUrl } = result.data;
 
   try {
-    await addShowItemToCart(productId, variantId, showPrice, showId);
+    await addToShowCart({
+      productId,
+      variantId,
+      showId,
+      showPrice,
+      name,
+      sku,
+      imageUrl,
+      quantity: 1,
+    });
 
-    return { status: 'success', message: 'Added to cart!' };
+    return { status: 'success', message: 'Added to show cart!' };
   } catch (error) {
     console.error('[show add-to-cart] error:', error);
 
-    return { status: 'error', message: 'Failed to add to cart.' };
+    return { status: 'error', message: 'Failed to add to show cart.' };
   }
 }

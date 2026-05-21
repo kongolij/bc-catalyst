@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
+import { getShowCart } from '~/lib/show-cart';
+
+import { ShowCart } from './_components/show-cart';
 import { ShowLookup } from './_components/show-lookup';
 
 interface Props {
@@ -16,5 +19,12 @@ export default async function ShowsPage({ params }: Props) {
 
   setRequestLocale(locale);
 
-  return <ShowLookup />;
+  const showCartItems = await getShowCart();
+
+  return (
+    <>
+      <ShowCart items={showCartItems} />
+      <ShowLookup />
+    </>
+  );
 }

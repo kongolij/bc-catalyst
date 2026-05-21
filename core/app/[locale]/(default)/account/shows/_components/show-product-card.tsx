@@ -96,6 +96,11 @@ export function ShowProductCard({ product, showId }: Props) {
               <input name="showPrice" type="hidden" value={product.showPrice} />
             )}
             <input name="showId" type="hidden" value={showId} />
+            <input name="name" type="hidden" value={product.name} />
+            <input name="sku" type="hidden" value={product.sku} />
+            {product.imageUrl && (
+              <input name="imageUrl" type="hidden" value={product.imageUrl} />
+            )}
             <SubmitButton />
           </form>
         )}
