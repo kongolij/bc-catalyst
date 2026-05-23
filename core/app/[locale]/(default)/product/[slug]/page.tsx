@@ -309,7 +309,7 @@ export default async function Product({ params, searchParams }: Props) {
           emptySelectPlaceholder={t('ProductDetails.emptySelectPlaceholder')}
           fields={productOptionsTransformer(baseProduct.productOptions)}
           incrementLabel={t('ProductDetails.increaseQuantity')}
-          prefetch={true}
+          prefetch={false}
           product={{
             id: baseProduct.entityId.toString(),
             title: baseProduct.name,

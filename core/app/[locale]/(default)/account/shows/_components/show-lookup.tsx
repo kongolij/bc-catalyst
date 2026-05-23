@@ -1,7 +1,9 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
+
+import { useRouter } from '~/i18n/routing';
 
 import { findShow, FindShowState } from '../_actions/find-show';
 import { ShowProductCard } from './show-product-card';
@@ -24,6 +26,17 @@ const initialState: FindShowState = { status: 'idle' };
 
 export function ShowLookup() {
   const [state, formAction] = useActionState(findShow, initialState);
+  const router = useRouter();
+  const prevShowId = useRef<string | undefined>(undefined);
+
+  // When the customer is assigned to a new show's group, purge the router cache
+  // so any PDP the user navigates to fetches fresh prices for the new price list.
+  useEffect(() => {
+    if (state.groupAssigned && state.showId && state.showId !== prevShowId.current) {
+      prevShowId.current = state.showId;
+      router.refresh();
+    }
+  }, [state.groupAssigned, state.showId, router]);
 
   return (
     <div>
