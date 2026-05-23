@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 import { addToShowCart } from '~/lib/show-cart';
@@ -50,6 +51,8 @@ export async function addShowProductToCart(
       imageUrl,
       quantity: 1,
     });
+
+    revalidatePath('/');
 
     return { status: 'success', message: 'Added to show cart!' };
   } catch (error) {
