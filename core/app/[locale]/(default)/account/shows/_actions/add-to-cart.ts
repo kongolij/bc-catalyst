@@ -43,6 +43,16 @@ export async function addShowProductToCart(
   prevState: AddToCartState,
   formData: FormData,
 ): Promise<AddToCartState> {
+  // Log raw form data first — before any validation so we always see this
+  console.log('[show-add-to-cart] formData:', {
+    productId: formData.get('productId'),
+    variantId: formData.get('variantId'),
+    showPrice: formData.get('showPrice'),
+    showId: formData.get('showId'),
+    name: formData.get('name'),
+    sku: formData.get('sku'),
+  });
+
   const result = schema.safeParse({
     productId: formData.get('productId'),
     variantId: formData.get('variantId') || undefined,
@@ -54,10 +64,14 @@ export async function addShowProductToCart(
   });
 
   if (!result.success) {
+    console.error('[show-add-to-cart] validation failed:', result.error.flatten());
+
     return { status: 'error', message: 'Invalid product data.' };
   }
 
   const { productId, variantId, showPrice, showId, name, sku, imageUrl } = result.data;
+
+  console.log('[show-add-to-cart] validated — productId:', productId, '| variantId:', variantId, '| showPrice:', showPrice, '| showId:', showId);
 
   try {
     // 1. Write to cookie show cart — preserves showId so the shows page can display
