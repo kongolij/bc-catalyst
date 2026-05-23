@@ -79,12 +79,12 @@ export function ShowProductCard({ product, showId }: Props) {
           />
         )}
 
-        {product.isMultiVariant ? (
+        {product.isMultiVariant || product.showPrice === undefined ? (
           <Link
             className="mt-auto mt-3 block w-full rounded bg-black px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-800"
             href={product.path}
           >
-            Select Options
+            {product.isMultiVariant ? 'Select Options' : 'View Product'}
           </Link>
         ) : (
           <form action={formAction}>
@@ -92,9 +92,7 @@ export function ShowProductCard({ product, showId }: Props) {
             {product.variantEntityId && (
               <input name="variantId" type="hidden" value={product.variantEntityId} />
             )}
-            {product.showPrice !== undefined && (
-              <input name="showPrice" type="hidden" value={product.showPrice} />
-            )}
+            <input name="showPrice" type="hidden" value={product.showPrice} />
             <input name="showId" type="hidden" value={showId} />
             <input name="name" type="hidden" value={product.name} />
             <input name="sku" type="hidden" value={product.sku} />
@@ -105,7 +103,7 @@ export function ShowProductCard({ product, showId }: Props) {
           </form>
         )}
 
-        {!product.isMultiVariant && state.status !== 'idle' && (
+        {!product.isMultiVariant && product.showPrice !== undefined && state.status !== 'idle' && (
           <p
             className={`mt-2 text-center text-xs ${
               state.status === 'success' ? 'text-green-600' : 'text-red-600'

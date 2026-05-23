@@ -45,15 +45,16 @@ export async function addToShowCart(
 ): Promise<void> {
   const cart = await getShowCart();
 
-  // Same product + variant (any show) → update to current show's price and increment quantity.
-  // This ensures switching shows and re-adding reflects the current price list, not the old one.
+  // Same product + variant + show → increment quantity.
+  // Different show → new line item so each show's price is preserved separately.
   const existing = cart.find(
-    (i) => i.productId === item.productId && i.variantId === item.variantId,
+    (i) =>
+      i.productId === item.productId &&
+      i.variantId === item.variantId &&
+      i.showId === item.showId,
   );
 
   if (existing) {
-    existing.showId = item.showId;
-    existing.showPrice = item.showPrice;
     existing.quantity += item.quantity;
     await saveShowCart(cart);
 
