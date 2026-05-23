@@ -85,7 +85,7 @@ export async function addShowProductToCart(
     const lineItem = {
       product_id: productId,
       quantity: 1,
-      list_price: showPrice,
+      list_price: showPrice + 1, // TEST: +$1 to check if is_custom_price becomes true
       ...(variantId !== undefined ? { variant_id: variantId } : {}),
     };
 
