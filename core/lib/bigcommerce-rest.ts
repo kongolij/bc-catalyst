@@ -53,6 +53,20 @@ export async function bcRestPost<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function bcRestDelete(path: string): Promise<void> {
+  const res = await fetch(buildUrl(path), {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    throw new Error(`BigCommerce API ${res.status}: ${text}`);
+  }
+}
+
 export async function bcRestPut<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(buildUrl(path), {
     method: 'PUT',
