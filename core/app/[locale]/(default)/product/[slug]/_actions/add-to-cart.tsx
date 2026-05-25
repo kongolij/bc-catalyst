@@ -8,6 +8,8 @@ import { unstable_expireTag } from 'next/cache';
 import { ReactNode } from 'react';
 
 import { Field, schema } from '@/vibes/soul/sections/product-detail/schema';
+import { getSessionCustomerAccessToken } from '~/auth';
+import { client } from '~/client';
 import { graphql } from '~/client/graphql';
 import { TAGS } from '~/client/tags';
 import { Link } from '~/components/link';
@@ -16,6 +18,14 @@ import { addToOrCreateCart, getCartId, setCartId } from '~/lib/cart';
 import { MissingCartError } from '~/lib/cart/error';
 import { getActiveShow } from '~/lib/active-show';
 import { addToShowCart } from '~/lib/show-cart';
+
+const CustomerEntityIdQuery = graphql(`
+  query PDPShowAddToCartCustomerQuery {
+    customer {
+      entityId
+    }
+  }
+`);
 
 type CartSelectedOptionsInput = ReturnType<typeof graphql.scalar<'CartSelectedOptionsInput'>>;
 
@@ -175,13 +185,26 @@ export const addToCart = async (
     const activeShow = await getActiveShow();
 
     if (activeShow) {
-      // Fetch product info and variants in parallel
-      const [variantsRes, productRes] = await Promise.all([
+      console.log('[pdp-add-to-cart] show mode active — showId:', activeShow.showId, '| priceListId:', activeShow.priceListId);
+
+      const customerAccessToken = await getSessionCustomerAccessToken();
+
+      // Fetch variant list, product info, and customer ID in parallel
+      const [variantsRes, productRes, customerRes] = await Promise.all([
         bcRestGet<{ data: BCVariant[] }>(
           `/v3/catalog/products/${productEntityId}/variants?limit=250`,
         ),
         bcRestGet<{ data: BCProduct }>(`/v3/catalog/products/${productEntityId}`),
+        customerAccessToken
+          ? client.fetch({
+              document: CustomerEntityIdQuery,
+              customerAccessToken,
+              fetchOptions: { cache: 'no-store' },
+            })
+          : Promise.resolve(null),
       ]);
+
+      const customerId = customerRes?.data?.customer?.entityId;
 
       // Match the selected option values to the correct variant
       const selectedValueIds = new Set(
@@ -200,9 +223,10 @@ export const addToCart = async (
               );
             });
 
+      console.log('[pdp-add-to-cart] variant resolved:', variant?.id, '| customerId:', customerId);
+
       if (variant) {
-        // Fetch show price records for this product and filter client-side by variant + currency.
-        // BC price list records API does not support variant_id or currency_code as query filters.
+        // Fetch show price records and filter client-side — BC API rejects variant_id/currency_code as query params
         const priceRes = await bcRestGet<{
           data: Array<{
             variant_id?: number;
@@ -220,6 +244,8 @@ export const addToCart = async (
 
         const showPrice = record?.price ?? record?.sale_price;
 
+        console.log('[pdp-add-to-cart] showPrice:', showPrice, '| record:', JSON.stringify(record));
+
         if (showPrice !== undefined) {
           const lineItem = {
             product_id: productEntityId,
@@ -230,16 +256,25 @@ export const addToCart = async (
 
           const existingCartId = await getCartId();
 
+          console.log('[pdp-add-to-cart] existingCartId:', existingCartId ?? 'none');
+
           if (existingCartId) {
-            await bcRestPost(`/v3/carts/${existingCartId}/items`, { line_items: [lineItem] });
+            const res = await bcRestPost<BCCartResponse>(`/v3/carts/${existingCartId}/items`, { line_items: [lineItem] });
+
+            console.log('[pdp-add-to-cart] added to existing cart:', existingCartId, '| response id:', res.data?.id);
           } else {
-            // No customer_id — BC treats list_price as is_custom_price: true,
-            // locking the show price even when the customer switches groups.
             const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
-            const newCart = await bcRestPost<BCCartResponse>('/v3/carts', {
+            const createPayload = {
               channel_id: channelId,
+              ...(customerId !== undefined ? { customer_id: customerId } : {}),
               line_items: [lineItem],
-            });
+            };
+
+            console.log('[pdp-add-to-cart] creating cart payload:', JSON.stringify(createPayload));
+
+            const newCart = await bcRestPost<BCCartResponse>('/v3/carts', createPayload);
+
+            console.log('[pdp-add-to-cart] cart created:', newCart.data.id);
 
             await setCartId(newCart.data.id);
           }
@@ -275,6 +310,7 @@ export const addToCart = async (
     }
 
     // Standard Storefront flow — no active show, or variant/price not resolved
+    console.log('[pdp-add-to-cart] falling back to standard Storefront flow');
     await addToOrCreateCart({
       lineItems: [
         {
