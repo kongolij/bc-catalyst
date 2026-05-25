@@ -138,7 +138,7 @@ export async function addShowProductToCart(
     }
 
     unstable_expireTag(TAGS.cart);
-    revalidatePath('/');
+    revalidatePath('/cart');
 
     return { status: 'success', message: 'Added to cart!' };
   } catch (error) {

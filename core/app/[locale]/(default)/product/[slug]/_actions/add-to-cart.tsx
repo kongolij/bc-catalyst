@@ -4,7 +4,7 @@ import { BigCommerceGQLError } from '@bigcommerce/catalyst-client';
 import { SubmissionResult } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
 import { getTranslations } from 'next-intl/server';
-import { unstable_expireTag } from 'next/cache';
+import { revalidatePath, unstable_expireTag } from 'next/cache';
 import { ReactNode } from 'react';
 
 import { Field, schema } from '@/vibes/soul/sections/product-detail/schema';
@@ -258,9 +258,12 @@ export const addToCart = async (
 
           console.log('[pdp-add-to-cart] existingCartId:', existingCartId ?? 'none');
 
+          let finalCartId: string;
+
           if (existingCartId) {
             const res = await bcRestPost<BCCartResponse>(`/v3/carts/${existingCartId}/items`, { line_items: [lineItem] });
 
+            finalCartId = existingCartId;
             console.log('[pdp-add-to-cart] added to existing cart:', existingCartId, '| response id:', res.data?.id);
           } else {
             const channelId = parseInt(process.env.BIGCOMMERCE_CHANNEL_ID ?? '1', 10);
@@ -274,9 +277,10 @@ export const addToCart = async (
 
             const newCart = await bcRestPost<BCCartResponse>('/v3/carts', createPayload);
 
-            console.log('[pdp-add-to-cart] cart created:', newCart.data.id);
+            finalCartId = newCart.data.id;
+            console.log('[pdp-add-to-cart] cart created:', finalCartId);
 
-            await setCartId(newCart.data.id);
+            await setCartId(finalCartId);
           }
 
           // Mirror to cookie show cart so the shows page reflects this item
@@ -292,6 +296,9 @@ export const addToCart = async (
           });
 
           unstable_expireTag(TAGS.cart);
+          revalidatePath('/cart');
+
+          console.log('[pdp-add-to-cart] show path complete — cartId in session:', finalCartId);
 
           return {
             lastResult: submission.reply(),

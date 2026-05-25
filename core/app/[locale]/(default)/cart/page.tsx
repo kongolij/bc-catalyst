@@ -78,6 +78,8 @@ export default async function Cart({ params }: Props) {
   const cart = data.site.cart;
   const checkout = data.site.checkout;
 
+  console.log('[cart debug] cartId:', cartId, '| cart found:', !!cart);
+
   if (!cart) {
     return (
       <CartEmptyState
@@ -90,8 +92,6 @@ export default async function Cart({ params }: Props) {
 
   const lineItems = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
 
-  // DEBUG — remove after confirming correct price field
-  console.log('[cart debug] cartId:', cartId);
   lineItems.forEach((item) => {
     console.log('[cart price debug]', {
       name: item.name,
