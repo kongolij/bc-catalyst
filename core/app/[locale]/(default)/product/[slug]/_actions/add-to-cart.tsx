@@ -201,14 +201,24 @@ export const addToCart = async (
             });
 
       if (variant) {
-        // Fetch the show price for this specific variant from the price list
+        // Fetch show price records for this product and filter client-side by variant + currency.
+        // BC price list records API does not support variant_id or currency_code as query filters.
         const priceRes = await bcRestGet<{
-          data: Array<{ price?: number; sale_price?: number }>;
-        }>(
-          `/v3/pricelists/${activeShow.priceListId}/records?variant_id=${variant.id}&currency_code=CAD&limit=10`,
+          data: Array<{
+            variant_id?: number;
+            price?: number;
+            sale_price?: number;
+            currency?: string;
+          }>;
+        }>(`/v3/pricelists/${activeShow.priceListId}/records?limit=250`);
+
+        const record = priceRes.data.find(
+          (r) =>
+            r.variant_id === variant.id &&
+            (!r.currency || r.currency.toUpperCase() === 'CAD'),
         );
 
-        const showPrice = priceRes.data[0]?.price ?? priceRes.data[0]?.sale_price;
+        const showPrice = record?.price ?? record?.sale_price;
 
         if (showPrice !== undefined) {
           const lineItem = {
