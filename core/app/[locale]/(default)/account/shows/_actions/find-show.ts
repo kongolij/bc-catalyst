@@ -8,6 +8,7 @@ import { generateCustomerLoginApiJwt } from '~/auth/customer-login-api';
 import { client } from '~/client';
 import { graphql } from '~/client/graphql';
 import { bcRestGet, bcRestPut } from '~/lib/bigcommerce-rest';
+import { setActiveShow } from '~/lib/active-show';
 
 const CustomerEntityIdQuery = graphql(`
   query ShowsCustomerEntityIdQuery {
@@ -226,6 +227,9 @@ export async function findShow(
       products: [],
     };
   }
+
+  // Store active show so PDP add-to-cart can lock prices via Management REST API
+  await setActiveShow(showId, priceList.id);
 
   // 5. Fetch price list records
   let records: PriceListRecord[] = [];
