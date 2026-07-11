@@ -1,4 +1,6 @@
 import { removeEdgesAndNodes } from '@bigcommerce/catalyst-client';
+import { MakeswiftComponent } from '@makeswift/runtime/next';
+import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Streamable } from '@/vibes/soul/lib/streamable';
@@ -8,6 +10,7 @@ import { getSessionCustomerAccessToken } from '~/auth';
 import { Subscribe } from '~/components/subscribe';
 import { productCardTransformer } from '~/data-transformers/product-card-transformer';
 import { getPreferredCurrencyCode } from '~/lib/currency';
+import { client } from '~/lib/makeswift/client';
 
 import { Slideshow } from './_components/slideshow';
 import { getPageData } from './page-data';
@@ -16,6 +19,14 @@ interface Props {
   params: Promise<{ locale: string }>;
 }
 
+const HOME_SLOTS = [
+  { id: 'home-top', label: 'Home – Top' },
+  { id: 'home-after-hero', label: 'Home – After Hero' },
+  { id: 'home-middle', label: 'Home – Middle' },
+  { id: 'home-below-newest', label: 'Home – Below Newest' },
+  { id: 'home-bottom', label: 'Home – Bottom' },
+] as const;
+
 export default async function Home({ params }: Props) {
   const { locale } = await params;
 
@@ -23,6 +34,14 @@ export default async function Home({ params }: Props) {
 
   const t = await getTranslations('Home');
   const format = await getFormatter();
+
+  const siteVersion = await getSiteVersion();
+
+  const [topSnap, afterHeroSnap, middleSnap, belowNewestSnap, bottomSnap] = await Promise.all(
+    HOME_SLOTS.map((slot) =>
+      client.getComponentSnapshot(slot.id, { siteVersion, locale, allowLocaleFallback: true }),
+    ),
+  );
 
   const streamablePageData = Streamable.from(async () => {
     const customerAccessToken = await getSessionCustomerAccessToken();
@@ -49,7 +68,19 @@ export default async function Home({ params }: Props) {
 
   return (
     <>
+      <MakeswiftComponent
+        label={HOME_SLOTS[0].label}
+        snapshot={topSnap}
+        type="layouts-section"
+      />
+
       <Slideshow />
+
+      <MakeswiftComponent
+        label={HOME_SLOTS[1].label}
+        snapshot={afterHeroSnap}
+        type="layouts-section"
+      />
 
       <FeaturedProductList
         cta={{ label: t('FeaturedProducts.cta'), href: '/shop-all' }}
@@ -58,6 +89,12 @@ export default async function Home({ params }: Props) {
         emptyStateTitle={t('FeaturedProducts.emptyStateTitle')}
         products={streamableFeaturedProducts}
         title={t('FeaturedProducts.title')}
+      />
+
+      <MakeswiftComponent
+        label={HOME_SLOTS[2].label}
+        snapshot={middleSnap}
+        type="layouts-section"
       />
 
       <FeaturedProductCarousel
@@ -71,7 +108,19 @@ export default async function Home({ params }: Props) {
         title={t('NewestProducts.title')}
       />
 
+      <MakeswiftComponent
+        label={HOME_SLOTS[3].label}
+        snapshot={belowNewestSnap}
+        type="layouts-section"
+      />
+
       <Subscribe />
+
+      <MakeswiftComponent
+        label={HOME_SLOTS[4].label}
+        snapshot={bottomSnap}
+        type="layouts-section"
+      />
     </>
   );
 }
