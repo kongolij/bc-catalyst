@@ -39,6 +39,7 @@ import './faq/register';
 import './find-show/register';
 import './ges-accordion/register';
 import './ges-accordion-page/register';
+import './home-page/register';
 import './mega-banner/register';
 import './wizard/register';
 
