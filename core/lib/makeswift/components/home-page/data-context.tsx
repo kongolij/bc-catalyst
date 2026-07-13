@@ -12,6 +12,10 @@ interface HomePageData {
 }
 
 const HomePageDataContext = createContext<HomePageData | null>(null);
+const fallbackHomePageData: HomePageData = {
+  featuredProducts: [],
+  newestProducts: [],
+};
 
 export function MakeswiftHomePageDataProvider({
   children,
@@ -23,9 +27,5 @@ export function MakeswiftHomePageDataProvider({
 export function useMakeswiftHomePageData() {
   const data = useContext(HomePageDataContext);
 
-  if (data == null) {
-    throw new Error('MakeswiftHomePage must be rendered inside MakeswiftHomePageDataProvider.');
-  }
-
-  return data;
+  return data ?? fallbackHomePageData;
 }
