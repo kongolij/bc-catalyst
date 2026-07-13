@@ -24,6 +24,9 @@ import './breadcrumbs/register';
 // Customer group
 import './customer-group-slot/register';
 
+// Subscribe
+import './subscribe/register';
+
 // Catalog components
 import './product-card/register';
 import './products-list/register';
