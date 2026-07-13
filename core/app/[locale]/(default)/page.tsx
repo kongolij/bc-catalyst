@@ -20,11 +20,11 @@ interface Props {
 }
 
 const HOME_SLOTS = [
-  { id: 'home-top', label: 'Home – Top' },
-  { id: 'home-after-hero', label: 'Home – After Hero' },
-  { id: 'home-middle', label: 'Home – Middle' },
-  { id: 'home-below-newest', label: 'Home – Below Newest' },
-  { id: 'home-bottom', label: 'Home – Bottom' },
+  { id: 'home-top', label: 'Home - Top' },
+  { id: 'home-after-hero', label: 'Home - After Hero' },
+  { id: 'home-middle', label: 'Home - Middle' },
+  { id: 'home-below-newest', label: 'Home - Below Newest' },
+  { id: 'home-bottom', label: 'Home - Bottom' },
 ] as const;
 
 export default async function Home({ params }: Props) {
@@ -37,10 +37,9 @@ export default async function Home({ params }: Props) {
 
   const siteVersion = await getSiteVersion();
 
-  const [topSnap, afterHeroSnap, middleSnap, belowNewestSnap, bottomSnap] = await Promise.all(
-    HOME_SLOTS.map((slot) =>
-      client.getComponentSnapshot(slot.id, { siteVersion, locale, allowLocaleFallback: true }),
-    ),
+  const snapshots = await client.unstable_getComponentSnapshots(
+    HOME_SLOTS.map(({ id }) => id),
+    { siteVersion, locale, allowLocaleFallback: true },
   );
 
   const streamablePageData = Streamable.from(async () => {
@@ -70,7 +69,7 @@ export default async function Home({ params }: Props) {
     <>
       <MakeswiftComponent
         label={HOME_SLOTS[0].label}
-        snapshot={topSnap}
+        snapshot={snapshots[0]!}
         type="layouts-section"
       />
 
@@ -78,7 +77,7 @@ export default async function Home({ params }: Props) {
 
       <MakeswiftComponent
         label={HOME_SLOTS[1].label}
-        snapshot={afterHeroSnap}
+        snapshot={snapshots[1]!}
         type="layouts-section"
       />
 
@@ -93,7 +92,7 @@ export default async function Home({ params }: Props) {
 
       <MakeswiftComponent
         label={HOME_SLOTS[2].label}
-        snapshot={middleSnap}
+        snapshot={snapshots[2]!}
         type="layouts-section"
       />
 
@@ -110,7 +109,7 @@ export default async function Home({ params }: Props) {
 
       <MakeswiftComponent
         label={HOME_SLOTS[3].label}
-        snapshot={belowNewestSnap}
+        snapshot={snapshots[3]!}
         type="layouts-section"
       />
 
@@ -118,7 +117,7 @@ export default async function Home({ params }: Props) {
 
       <MakeswiftComponent
         label={HOME_SLOTS[4].label}
-        snapshot={bottomSnap}
+        snapshot={snapshots[4]!}
         type="layouts-section"
       />
     </>
