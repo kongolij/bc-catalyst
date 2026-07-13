@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { client } from '~/lib/makeswift/client';
 
+import { HomePageDataProvider } from '../home-page-data-provider';
+
 interface Props {
   params: Promise<{ locale: string; rest: string[] }>;
 }
@@ -26,5 +28,9 @@ export default async function CatchAllPage({ params }: Props) {
 
   if (!snapshot) notFound();
 
-  return <MakeswiftPage snapshot={snapshot} />;
+  return (
+    <HomePageDataProvider>
+      <MakeswiftPage snapshot={snapshot} />
+    </HomePageDataProvider>
+  );
 }
