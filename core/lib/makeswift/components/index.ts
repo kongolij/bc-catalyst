@@ -41,6 +41,7 @@ import './ges-accordion/register';
 import './ges-accordion-page/register';
 import './home-page/register';
 import './mega-banner/register';
+import './new-page/register';
 import './wizard/register';
 
 // GES page templates (hidden)
