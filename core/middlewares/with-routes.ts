@@ -223,14 +223,6 @@ const clearLocaleFromPath = (path: string, locale: string) => {
   return path;
 };
 
-const rewriteWithRequestHeaders = (url: URL, request: NextRequest) => {
-  return NextResponse.rewrite(url, {
-    request: {
-      headers: request.headers,
-    },
-  });
-};
-
 const getRouteInfo = async (request: NextRequest, event: NextFetchEvent) => {
   const locale = request.headers.get('x-bc-locale') ?? '';
   const channelId = request.headers.get('x-bc-channel-id') ?? '';
@@ -284,12 +276,7 @@ export const withRoutes: MiddlewareFactory = () => {
 
     if (status === 'MAINTENANCE') {
       // 503 status code not working - https://github.com/vercel/next.js/issues/50155
-      return NextResponse.rewrite(new URL(`/${locale}/maintenance`, request.url), {
-        request: {
-          headers: request.headers,
-        },
-        status: 503,
-      });
+      return NextResponse.rewrite(new URL(`/${locale}/maintenance`, request.url), { status: 503 });
     }
 
     const redirectConfig = {
@@ -393,10 +380,9 @@ export const withRoutes: MiddlewareFactory = () => {
         const { pathname } = new URL(request.url);
 
         const cleanPathName = clearLocaleFromPath(pathname, locale);
+        const newPageMatch = /^\/new-page-(\d+)$/.exec(cleanPathName);
 
-        request.headers.set('x-bc-pathname', cleanPathName);
-
-        url = `/${locale}${cleanPathName}`;
+        url = newPageMatch ? `/${locale}/new-page/${newPageMatch[1]}` : `/${locale}${cleanPathName}`;
       }
     }
 
@@ -404,7 +390,7 @@ export const withRoutes: MiddlewareFactory = () => {
 
     rewriteUrl.search = request.nextUrl.search;
 
-    return rewriteWithRequestHeaders(rewriteUrl, request);
+    return NextResponse.rewrite(rewriteUrl);
   };
 };
 

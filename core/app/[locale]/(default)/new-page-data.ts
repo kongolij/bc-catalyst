@@ -26,12 +26,16 @@ const NewPageDataQuery = graphql(
 );
 
 export const getNewPageData = cache(async (entityId: number, customerAccessToken?: string) => {
-  const { data } = await client.fetch({
-    document: NewPageDataQuery,
-    variables: { entityId },
-    customerAccessToken,
-    fetchOptions: customerAccessToken ? { cache: 'no-store' } : { next: { revalidate } },
-  });
+  try {
+    const { data } = await client.fetch({
+      document: NewPageDataQuery,
+      variables: { entityId },
+      customerAccessToken,
+      fetchOptions: customerAccessToken ? { cache: 'no-store' } : { next: { revalidate } },
+    });
 
-  return data.site.product;
+    return data.site.product;
+  } catch {
+    return null;
+  }
 });
