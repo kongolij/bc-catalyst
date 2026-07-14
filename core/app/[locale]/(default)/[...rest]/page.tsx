@@ -1,6 +1,7 @@
 import { Page as MakeswiftPage } from '@makeswift/runtime/next';
 import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { notFound } from 'next/navigation';
+import { setRequestLocale } from 'next-intl/server';
 
 import { client } from '~/lib/makeswift/client';
 
@@ -19,11 +20,15 @@ export async function generateStaticParams() {
 }
 
 export default async function CatchAllPage({ params }: Props) {
-  const { rest } = await params;
+  const { locale, rest } = await params;
   const pathname = '/' + rest.join('/');
+
+  setRequestLocale(locale);
 
   const snapshot = await client.getPageSnapshot(pathname, {
     siteVersion: await getSiteVersion(),
+    locale,
+    allowLocaleFallback: true,
   });
 
   if (!snapshot) notFound();
