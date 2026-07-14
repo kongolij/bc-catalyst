@@ -380,7 +380,7 @@ export const withRoutes: MiddlewareFactory = () => {
         const { pathname } = new URL(request.url);
 
         const cleanPathName = clearLocaleFromPath(pathname, locale);
-        const newPageMatch = /^\/new-page-(\d+)$/.exec(cleanPathName);
+        const newPageMatch = /^\/new-page-([^/]+)$/.exec(cleanPathName);
 
         url = newPageMatch ? `/${locale}/new-page/${newPageMatch[1]}` : `/${locale}${cleanPathName}`;
       }
