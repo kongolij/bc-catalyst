@@ -36,6 +36,7 @@ import './category-list/register';
 
 // GES components
 import './faq/register';
+import './faq-page-template/register';
 import './find-show/register';
 import './ges-accordion/register';
 import './ges-accordion-page/register';
