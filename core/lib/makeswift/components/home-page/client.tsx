@@ -29,7 +29,15 @@ export function MakeswiftHomePage({
   const { featuredProducts, newestProducts } = useMakeswiftHomePageData();
 
   return (
-    <div className="relative left-1/2 w-screen -translate-x-1/2">
+    <div
+      style={{
+        left: '50%',
+        minWidth: 0,
+        position: 'relative',
+        transform: 'translateX(-50%)',
+        width: '100vw',
+      }}
+    >
       {top}
 
       <Slideshow />
