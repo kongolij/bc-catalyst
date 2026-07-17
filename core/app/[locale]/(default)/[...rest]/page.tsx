@@ -22,24 +22,11 @@ export default async function CatchAllPage({ params }: Props) {
   const { rest, locale } = await params;
   const pathname = '/' + rest.join('/');
 
-  const lastSegment = rest[rest.length - 1] ?? '';
-
-  if (lastSegment.includes('.')) {
-    notFound();
-  }
-
-  let snapshot: Awaited<ReturnType<typeof client.getPageSnapshot>> | null = null;
-
-  try {
-    snapshot = await client.getPageSnapshot(pathname, {
-      siteVersion: await getSiteVersion(),
-      locale,
-      allowLocaleFallback: true,
-    });
-  } catch (err) {
-    console.warn('[makeswift catch-all] snapshot lookup failed', { pathname, locale, err });
-    notFound();
-  }
+  const snapshot = await client.getPageSnapshot(pathname, {
+    siteVersion: await getSiteVersion(),
+    locale,
+    allowLocaleFallback: true,
+  });
 
   if (!snapshot) {
     console.warn('[makeswift catch-all] no snapshot for', { pathname, locale });
