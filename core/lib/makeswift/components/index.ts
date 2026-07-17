@@ -33,6 +33,7 @@ import './products-list/register';
 import './products-carousel/register';
 import './product-detail/register';
 import './self-hydrating-product-detail/register';
+import './catalyst-product-detail/register';
 import './category-list/register';
 
 // GES components

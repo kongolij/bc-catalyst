@@ -304,8 +304,10 @@ const ProductPricingAndRelatedProductsQuery = graphql(
   [PricingFragment, FeaturedProductsCarouselFragment],
 );
 
+type PricingVariables = VariablesOf<typeof ProductPricingAndRelatedProductsQuery>;
+
 export const getProductPricingAndRelatedProducts = cache(
-  async (variables: Variables, customerAccessToken?: string) => {
+  async (variables: PricingVariables, customerAccessToken?: string) => {
     const { data } = await client.fetch({
       document: ProductPricingAndRelatedProductsQuery,
       variables,

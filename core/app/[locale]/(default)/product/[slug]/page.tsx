@@ -8,14 +8,12 @@ import { SearchParams } from 'nuqs/server';
 
 import { Stream, Streamable } from '@/vibes/soul/lib/streamable';
 import { FeaturedProductCarousel } from '@/vibes/soul/sections/featured-product-carousel';
-import { ProductDetail } from '@/vibes/soul/sections/product-detail';
 import { getSessionCustomerAccessToken } from '~/auth';
-import { pricesTransformer } from '~/data-transformers/prices-transformer';
 import { productCardTransformer } from '~/data-transformers/product-card-transformer';
-import { productOptionsTransformer } from '~/data-transformers/product-options-transformer';
 import { getPreferredCurrencyCode } from '~/lib/currency';
 import { client as makeswiftClient } from '~/lib/makeswift/client';
-import { ProductContextProvider } from '~/lib/makeswift/components/self-hydrating-product-detail/provider';
+import { buildCatalystProductContextValue } from '~/lib/makeswift/components/catalyst-product-detail/build-context-value';
+import { CatalystProductProvider } from '~/lib/makeswift/components/catalyst-product-detail/provider';
 
 const PDP_TEMPLATE_PATH = '/pdp-template';
 
@@ -31,12 +29,9 @@ async function getPdpTemplateSnapshot() {
   }
 }
 
-import { addToCart } from './_actions/add-to-cart';
-import { ProductAnalyticsProvider } from './_components/product-analytics-provider';
 import { ProductSchema } from './_components/product-schema';
 import { ProductViewed } from './_components/product-viewed';
 import { Reviews } from './_components/reviews';
-import { WishlistButton } from './_components/wishlist-button';
 import { WishlistButtonForm } from './_components/wishlist-button/form';
 import {
   getProduct,
@@ -112,13 +107,14 @@ export default async function Product({ params, searchParams }: Props) {
         (option) => !Number.isNaN(option.optionEntityId) && !Number.isNaN(option.valueEntityId),
       );
 
-    const variables = {
-      entityId: Number(productId),
-      optionValueIds,
-      useDefaultOptionSelections: true,
-    };
-
-    const product = await getStreamableProduct(variables, customerAccessToken);
+    const product = await getStreamableProduct(
+      {
+        entityId: Number(productId),
+        optionValueIds,
+        useDefaultOptionSelections: true,
+      },
+      customerAccessToken,
+    );
 
     if (!product) {
       return notFound();
@@ -143,141 +139,15 @@ export default async function Product({ params, searchParams }: Props) {
 
     const currencyCode = (await getPreferredCurrencyCode()) ?? 'CAD';
 
-    const variables = {
-      entityId: Number(productId),
-      optionValueIds,
-      useDefaultOptionSelections: true,
-      currencyCode,
-    };
-
-    return await getProductPricingAndRelatedProducts(variables, customerAccessToken);
-  });
-
-  const streamablePrices = Streamable.from(async () => {
-    const product = await streamableProductPricingAndRelatedProducts;
-
-    if (!product) {
-      return null;
-    }
-
-    // DEBUG — remove after confirming price list applies
-    console.log('[pdp price debug]', {
-      basePrice: product.prices?.basePrice?.value,
-      price: product.prices?.price?.value,
-      salePrice: product.prices?.salePrice?.value,
-    });
-
-    return pricesTransformer(product.prices, format) ?? null;
-  });
-
-  const streamableImages = Streamable.from(async () => {
-    const product = await streamableProduct;
-
-    const images = removeEdgesAndNodes(product.images)
-      .filter((image) => image.url !== product.defaultImage?.url)
-      .map((image) => ({
-        src: image.url,
-        alt: image.altText,
-      }));
-
-    return product.defaultImage
-      ? [{ src: product.defaultImage.url, alt: product.defaultImage.altText }, ...images]
-      : images;
-  });
-
-  const streameableCtaLabel = Streamable.from(async () => {
-    const product = await streamableProduct;
-
-    if (product.availabilityV2.status === 'Unavailable') {
-      return t('ProductDetails.Submit.unavailable');
-    }
-
-    if (product.availabilityV2.status === 'Preorder') {
-      return t('ProductDetails.Submit.preorder');
-    }
-
-    if (!product.inventory.isInStock) {
-      return t('ProductDetails.Submit.outOfStock');
-    }
-
-    return t('ProductDetails.Submit.addToCart');
-  });
-
-  const streameableCtaDisabled = Streamable.from(async () => {
-    const product = await streamableProduct;
-
-    if (product.availabilityV2.status === 'Unavailable') {
-      return true;
-    }
-
-    if (product.availabilityV2.status === 'Preorder') {
-      return false;
-    }
-
-    if (!product.inventory.isInStock) {
-      return true;
-    }
-
-    return false;
-  });
-
-  const streameableAccordions = Streamable.from(async () => {
-    const product = await streamableProduct;
-
-    const customFields = removeEdgesAndNodes(product.customFields);
-
-    const specifications = [
+    return await getProductPricingAndRelatedProducts(
       {
-        name: t('ProductDetails.Accordions.sku'),
-        value: product.sku,
+        entityId: Number(productId),
+        optionValueIds,
+        useDefaultOptionSelections: true,
+        currencyCode,
       },
-      {
-        name: t('ProductDetails.Accordions.weight'),
-        value: `${product.weight?.value} ${product.weight?.unit}`,
-      },
-      {
-        name: t('ProductDetails.Accordions.condition'),
-        value: product.condition,
-      },
-      ...customFields.map((field) => ({
-        name: field.name,
-        value: field.value,
-      })),
-    ];
-
-    return [
-      ...(specifications.length
-        ? [
-            {
-              title: t('ProductDetails.Accordions.specifications'),
-              content: (
-                <div className="prose @container">
-                  <dl className="flex flex-col gap-4">
-                    {specifications.map((field, index) => (
-                      <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2" key={index}>
-                        <dt>
-                          <strong>{field.name}</strong>
-                        </dt>
-                        <dd>{field.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ),
-            },
-          ]
-        : []),
-      ...(product.warranty
-        ? [
-            {
-              title: t('ProductDetails.Accordions.warranty'),
-              content: (
-                <div className="prose" dangerouslySetInnerHTML={{ __html: product.warranty }} />
-              ),
-            },
-          ]
-        : []),
-    ];
+      customerAccessToken,
+    );
   });
 
   const streameableRelatedProducts = Streamable.from(async () => {
@@ -292,65 +162,25 @@ export default async function Product({ params, searchParams }: Props) {
     return productCardTransformer(relatedProducts, format);
   });
 
-  const pdpTemplateSnapshot = await getPdpTemplateSnapshot();
-
-  const streamableAnalyticsData = Streamable.from(async () => {
-    const [extendedProduct, pricingProduct] = await Streamable.all([
-      streamableProduct,
-      streamableProductPricingAndRelatedProducts,
-    ]);
-
-    return {
-      id: extendedProduct.entityId,
-      name: extendedProduct.name,
-      sku: extendedProduct.sku,
-      brand: extendedProduct.brand?.name ?? '',
-      price: pricingProduct?.prices?.price.value ?? 0,
-      currency: pricingProduct?.prices?.price.currencyCode ?? '',
-    };
-  });
+  const [pdpTemplateSnapshot, catalystProductContextValue] = await Promise.all([
+    getPdpTemplateSnapshot(),
+    buildCatalystProductContextValue({
+      productId,
+      customerAccessToken,
+      searchParams,
+      detachedWishlistFormId,
+    }),
+  ]);
 
   return (
     <>
-      <ProductAnalyticsProvider data={streamableAnalyticsData}>
-        <ProductDetail
-          action={addToCart}
-          additionalActions={
-            <WishlistButton
-              formId={detachedWishlistFormId}
-              productId={productId}
-              productSku={streamableProductSku}
-            />
-          }
-          additionalInformationTitle={t('ProductDetails.additionalInformation')}
-          ctaDisabled={streameableCtaDisabled}
-          ctaLabel={streameableCtaLabel}
-          decrementLabel={t('ProductDetails.decreaseQuantity')}
-          emptySelectPlaceholder={t('ProductDetails.emptySelectPlaceholder')}
-          fields={productOptionsTransformer(baseProduct.productOptions)}
-          incrementLabel={t('ProductDetails.increaseQuantity')}
-          prefetch={false}
-          product={{
-            id: baseProduct.entityId.toString(),
-            title: baseProduct.name,
-            description: <div dangerouslySetInnerHTML={{ __html: baseProduct.description }} />,
-            href: baseProduct.path,
-            images: streamableImages,
-            price: streamablePrices,
-            subtitle: baseProduct.brand?.name,
-            rating: baseProduct.reviewSummary.averageRating,
-            accordions: streameableAccordions,
-          }}
-          quantityLabel={t('ProductDetails.quantity')}
-          thumbnailLabel={t('ProductDetails.thumbnail')}
-        />
-      </ProductAnalyticsProvider>
-
-      {pdpTemplateSnapshot ? (
-        <ProductContextProvider entityId={String(productId)}>
+      {pdpTemplateSnapshot && catalystProductContextValue ? (
+        <CatalystProductProvider value={catalystProductContextValue}>
           <MakeswiftPage snapshot={pdpTemplateSnapshot} />
-        </ProductContextProvider>
-      ) : null}
+        </CatalystProductProvider>
+      ) : (
+        catalystProductContextValue?.productDetail
+      )}
 
       <FeaturedProductCarousel
         cta={{ label: t('RelatedProducts.cta'), href: '/shop-all' }}

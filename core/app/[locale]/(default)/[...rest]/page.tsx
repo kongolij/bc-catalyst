@@ -1,13 +1,18 @@
 import { Page as MakeswiftPage } from '@makeswift/runtime/next';
 import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { notFound } from 'next/navigation';
+import { SearchParams } from 'nuqs/server';
 
+import { getSessionCustomerAccessToken } from '~/auth';
 import { client } from '~/lib/makeswift/client';
+import { buildCatalystProductContextValue } from '~/lib/makeswift/components/catalyst-product-detail/build-context-value';
+import { CatalystProductProvider } from '~/lib/makeswift/components/catalyst-product-detail/provider';
 
 import { HomePageDataProvider } from '../home-page-data-provider';
 
 interface Props {
   params: Promise<{ locale: string; rest: string[] }>;
+  searchParams: Promise<SearchParams>;
 }
 
 export async function generateStaticParams() {
@@ -18,7 +23,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function CatchAllPage({ params }: Props) {
+export default async function CatchAllPage({ params, searchParams }: Props) {
   const { rest } = await params;
   const pathname = '/' + rest.join('/');
 
@@ -27,6 +32,33 @@ export default async function CatchAllPage({ params }: Props) {
   });
 
   if (!snapshot) notFound();
+
+  const resolvedSearchParams = await searchParams;
+  const previewProductRaw = resolvedSearchParams.previewProduct;
+  const previewProductId = Array.isArray(previewProductRaw)
+    ? previewProductRaw[0]
+    : previewProductRaw;
+  const previewProductNumber = previewProductId ? Number(previewProductId) : NaN;
+
+  if (pathname === '/pdp-template' && !Number.isNaN(previewProductNumber)) {
+    const customerAccessToken = await getSessionCustomerAccessToken();
+
+    const contextValue = await buildCatalystProductContextValue({
+      productId: previewProductNumber,
+      customerAccessToken,
+      searchParams,
+    });
+
+    if (contextValue) {
+      return (
+        <HomePageDataProvider>
+          <CatalystProductProvider value={contextValue}>
+            <MakeswiftPage snapshot={snapshot} />
+          </CatalystProductProvider>
+        </HomePageDataProvider>
+      );
+    }
+  }
 
   return (
     <HomePageDataProvider>
