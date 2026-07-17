@@ -19,14 +19,19 @@ export async function generateStaticParams() {
 }
 
 export default async function CatchAllPage({ params }: Props) {
-  const { rest } = await params;
+  const { rest, locale } = await params;
   const pathname = '/' + rest.join('/');
 
   const snapshot = await client.getPageSnapshot(pathname, {
     siteVersion: await getSiteVersion(),
+    locale,
+    allowLocaleFallback: true,
   });
 
-  if (!snapshot) notFound();
+  if (!snapshot) {
+    console.warn('[makeswift catch-all] no snapshot for', { pathname, locale });
+    notFound();
+  }
 
   return (
     <HomePageDataProvider>
