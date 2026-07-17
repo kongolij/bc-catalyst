@@ -15,6 +15,7 @@ import { productCardTransformer } from '~/data-transformers/product-card-transfo
 import { productOptionsTransformer } from '~/data-transformers/product-options-transformer';
 import { getPreferredCurrencyCode } from '~/lib/currency';
 import { client as makeswiftClient } from '~/lib/makeswift/client';
+import { ProductContextProvider } from '~/lib/makeswift/components/self-hydrating-product-detail/provider';
 
 const PDP_TEMPLATE_PATH = '/pdp-template';
 
@@ -345,7 +346,11 @@ export default async function Product({ params, searchParams }: Props) {
         />
       </ProductAnalyticsProvider>
 
-      {pdpTemplateSnapshot ? <MakeswiftPage snapshot={pdpTemplateSnapshot} /> : null}
+      {pdpTemplateSnapshot ? (
+        <ProductContextProvider entityId={String(productId)}>
+          <MakeswiftPage snapshot={pdpTemplateSnapshot} />
+        </ProductContextProvider>
+      ) : null}
 
       <FeaturedProductCarousel
         cta={{ label: t('RelatedProducts.cta'), href: '/shop-all' }}

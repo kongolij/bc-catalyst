@@ -1,7 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+
+import { ProductContext } from './context';
 
 interface ProductData {
   id: string;
@@ -22,26 +23,14 @@ interface Props {
   showDescription?: boolean;
 }
 
-function extractProductIdFromPath(pathname: string | null): string | null {
-  if (!pathname) return null;
-
-  const segments = pathname.split('/').filter(Boolean);
-  const last = segments[segments.length - 1];
-
-  if (!last) return null;
-
-  return /^\d+$/.test(last) ? last : null;
-}
-
 export function MakeswiftSelfHydratingProductDetail({
   className,
   previewProductId,
   showPrice = true,
   showDescription = true,
 }: Props) {
-  const pathname = usePathname();
-  const urlProductId = extractProductIdFromPath(pathname);
-  const productId = urlProductId ?? previewProductId ?? null;
+  const context = useContext(ProductContext);
+  const productId = context?.entityId ?? previewProductId ?? null;
 
   const [product, setProduct] = useState<ProductData | null>(null);
   const [isLoading, setIsLoading] = useState(!!productId);
