@@ -71,6 +71,34 @@ const GetProductsByEntityIdsQuery = graphql(`
   }
 `);
 
+const SearchProductsQuery = graphql(`
+  query BcProductsSearch($searchTerm: String!, $first: Int) {
+    site {
+      search {
+        searchProducts(filters: { searchTerm: $searchTerm }) {
+          products(first: $first) {
+            edges {
+              node {
+                entityId
+                name
+                path
+                defaultImage {
+                  url(width: 500)
+                  altText
+                }
+                prices {
+                  price { value currencyCode }
+                  salePrice { value currencyCode }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
 function formatPrice(price: { value: number; currencyCode: string } | null | undefined) {
   if (!price) return '';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: price.currencyCode }).format(
@@ -103,8 +131,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const categoryPath = searchParams.get('categoryPath');
   const entityIds = searchParams.get('entityIds');
+  const search = searchParams.get('search');
 
   try {
+    if (search) {
+      const result = await client.fetch({
+        document: SearchProductsQuery,
+        variables: { searchTerm: search, first: 20 },
+        fetchOptions: { next: { revalidate } },
+      });
+
+      const products =
+        result.data.site.search.searchProducts.products.edges?.map((e) =>
+          normalizeProduct(e.node),
+        ) ?? [];
+
+      return NextResponse.json(products);
+    }
+
     if (categoryPath) {
       const routeResult = await client.fetch({
         document: GetCategoryEntityIdQuery,
