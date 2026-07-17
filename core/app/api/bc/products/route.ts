@@ -86,9 +86,19 @@ const SearchProductsQuery = graphql(`
                   url(width: 500)
                   altText
                 }
+                brand {
+                  name
+                  path
+                }
                 prices {
                   price { value currencyCode }
+                  basePrice { value currencyCode }
+                  retailPrice { value currencyCode }
                   salePrice { value currencyCode }
+                  priceRange {
+                    min { value currencyCode }
+                    max { value currencyCode }
+                  }
                 }
               }
             }
@@ -141,10 +151,7 @@ export async function GET(req: NextRequest) {
         fetchOptions: { next: { revalidate } },
       });
 
-      const products =
-        result.data.site.search.searchProducts.products.edges?.map((e) =>
-          normalizeProduct(e.node),
-        ) ?? [];
+      const products = result.data.site.search.searchProducts.products.edges?.map((e) => e.node) ?? [];
 
       return NextResponse.json(products);
     }
