@@ -1,0 +1,390 @@
+<mxfile host="app.diagrams.net" agent="claude-code" version="24.7.5">
+  <!-- ================================================================ -->
+  <!-- Page 1 — Overview: registration + request flow                   -->
+  <!-- ================================================================ -->
+  <diagram name="1. Overview" id="page-overview">
+    <mxGraphModel dx="2000" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Makeswift &amp;mdash; GES Home Page Template Architecture (bc-catalyst/core)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1400" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Two flows share the same ReactRuntime singleton: (a) client-side registration wires every component into the runtime, (b) the server request path fetches a snapshot and hydrates the template with BC data." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#555" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Swimlane: Registration -->
+        <mxCell id="lane_reg" value="Registration flow (browser boot)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#DAE8FC;strokeColor=#6C8EBF" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="480" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_provider" value="MakeswiftProvider (client)&#10;&#10;core/components/makeswift/provider.tsx&#10;&#10;'use client';&#10;wraps app in &lt;ReactRuntimeProvider&gt;&#10;side-effect: import '~/lib/makeswift/components'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="50" width="440" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_barrel" value="components/index.ts  (barrel)&#10;&#10;core/lib/makeswift/components/index.ts&#10;&#10;imports every ./&lt;component&gt;/register&#10;side-effect: calls runtime.registerComponent(...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="200" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_home_reg" value="home-page/register.ts&#10;&#10;runtime.registerComponent(MakeswiftHomePage, {&#10;  type: 'ges-home-page-template',&#10;  label: 'GES / Home Page Template',&#10;  props: {&#10;    top:         Slot(),&#10;    afterHero:   Slot(),&#10;    middle:      Slot(),&#10;    belowNewest: Slot(),&#10;    bottom:      Slot(),&#10;  },&#10;});" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="340" width="440" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_runtime" value="runtime.ts  (module-level singleton)&#10;&#10;export const runtime = new ReactRuntime();&#10;&#10;every register.ts file mutates this same instance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="600" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_builder" value="Makeswift Builder (external, authoring)&#10;&#10;editor drops 'GES / Home Page Template' on '/'&#10;fills 5 Slot props with any registered component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;dashed=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="740" width="440" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Reg arrows -->
+        <mxCell id="ea1" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2" edge="1" parent="1" source="reg_provider" target="reg_barrel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ea2" value="fan-out imports" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="reg_barrel" target="reg_home_reg">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ea3" value="registerComponent()" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="reg_home_reg" target="reg_runtime">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ea4" value="publish snapshot" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="reg_builder" target="reg_runtime">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Swimlane: Request -->
+        <mxCell id="lane_req" value="Request flow (server render)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#F8CECC;strokeColor=#B85450" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="540" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="req_page" value="app/[locale]/(default)/page.tsx&#10;&#10;const siteVersion = await getSiteVersion();&#10;const makeswiftSnapshot = await client.getPageSnapshot('/', {&#10;  siteVersion, locale, allowLocaleFallback: true,&#10;});&#10;&#10;return (&#10;  &lt;HomePageDataProvider&gt;&#10;    {makeswiftSnapshot&#10;      ? &lt;MakeswiftPage snapshot={makeswiftSnapshot} /&gt;&#10;      : &lt;MakeswiftHomePage /&gt;}&#10;  &lt;/HomePageDataProvider&gt;&#10;);" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#c53030;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_req">
+          <mxGeometry x="20" y="50" width="500" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="req_data_provider" value="HomePageDataProvider (server component)&#10;&#10;core/app/[locale]/(default)/home-page-data-provider.tsx&#10;&#10;const streamablePageData = Streamable.from(async () =&gt; {&#10;  const token = await getSessionCustomerAccessToken();&#10;  const currency = await getPreferredCurrencyCode();&#10;  return getPageData(currency, token);&#10;});&#10;&#10;const streamableFeaturedProducts = Streamable.from(async () =&gt; ... );&#10;const streamableNewestProducts   = Streamable.from(async () =&gt; ... );" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#c53030;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_req">
+          <mxGeometry x="20" y="290" width="500" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="req_context" value="&lt;MakeswiftHomePageDataProvider value={{ featuredProducts, newestProducts }}&gt;&#10;&#10;home-page/data-context.tsx (createContext&lt;HomePageData&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#7c3aed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_req">
+          <mxGeometry x="20" y="530" width="500" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="req_makeswiftPage" value="&lt;MakeswiftPage snapshot=... /&gt;&#10;&#10;@makeswift/runtime/next&#10;- deserializes tree from snapshot&#10;- looks up type 'ges-home-page-template' on runtime&#10;- hydrates 5 Slot props with authored ReactNodes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_req">
+          <mxGeometry x="20" y="640" width="500" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Request arrows -->
+        <mxCell id="er1" value="wraps children" style="endArrow=classic;html=1;strokeColor=#c53030;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_page" target="req_data_provider">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="er2" value="provides context" style="endArrow=classic;html=1;strokeColor=#7c3aed;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_data_provider" target="req_context">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="er3" value="renders snapshot" style="endArrow=classic;html=1;strokeColor=#c53030;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_context" target="req_makeswiftPage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Swimlane: Rendered template -->
+        <mxCell id="lane_ui" value="Rendered template (client tree)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#D5E8D4;strokeColor=#82B366" vertex="1" parent="1">
+          <mxGeometry x="1140" y="100" width="520" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="ui_home" value="MakeswiftHomePage (client)&#10;home-page/client.tsx&#10;&#10;'use client';&#10;const t = useTranslations('Home');&#10;const { featuredProducts, newestProducts } = useMakeswiftHomePageData();" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10;fontStyle=1" vertex="1" parent="lane_ui">
+          <mxGeometry x="20" y="50" width="480" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="ui_top"     value="{top}                         &lt;-- Slot"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="190" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_slide"   value="&lt;Slideshow /&gt;                 (fixed)"       style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="230" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_ah"      value="{afterHero}                   &lt;-- Slot"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="270" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_fpl"     value="&lt;FeaturedProductList products={featuredProducts} /&gt;"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="310" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_middle"  value="{middle}                      &lt;-- Slot"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="350" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_fpc"     value="&lt;FeaturedProductCarousel products={newestProducts} /&gt;"    style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="390" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_bn"      value="{belowNewest}                 &lt;-- Slot"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="430" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_sub"     value="&lt;Subscribe /&gt;                 (fixed)"       style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="470" width="480" height="30" as="geometry"/></mxCell>
+        <mxCell id="ui_bottom"  value="{bottom}                      &lt;-- Slot"      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_ui"><mxGeometry x="20"  y="510" width="480" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="ui_ctx" value="useMakeswiftHomePageData()&#10;consumes React context (purple)&#10;returns Streamable&lt;Product[]&gt; lists" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#7c3aed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_ui">
+          <mxGeometry x="20" y="570" width="480" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Cross-lane arrows -->
+        <mxCell id="cx1" value="runtime lookup by type" style="endArrow=classic;html=1;strokeColor=#b7791f;strokeWidth=2;dashed=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_makeswiftPage" target="reg_runtime">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="800" y="900"/><mxPoint x="260" y="900"/></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cx2" value="hydrates + renders" style="endArrow=classic;html=1;strokeColor=#c53030;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_makeswiftPage" target="ui_home">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="cx3" value="context read" style="endArrow=classic;html=1;strokeColor=#7c3aed;strokeWidth=2;dashed=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="req_context" target="ui_ctx">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1050" y="600"/><mxPoint x="1050" y="610"/></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="lg_title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="1030" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lg_reg"  value="Registration / runtime wiring"  style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;fontSize=10" vertex="1" parent="1"><mxGeometry x="40"  y="1060" width="260" height="30" as="geometry"/></mxCell>
+        <mxCell id="lg_req"  value="Server request path"            style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#c53030;fontSize=10" vertex="1" parent="1"><mxGeometry x="310" y="1060" width="260" height="30" as="geometry"/></mxCell>
+        <mxCell id="lg_ui"   value="Registered component / rendered UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;fontSize=10" vertex="1" parent="1"><mxGeometry x="580" y="1060" width="260" height="30" as="geometry"/></mxCell>
+        <mxCell id="lg_rt"   value="Shared runtime / snapshot render" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;fontSize=10" vertex="1" parent="1"><mxGeometry x="850" y="1060" width="260" height="30" as="geometry"/></mxCell>
+        <mxCell id="lg_ctx"  value="React context (BC data)"         style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#7c3aed;fontSize=10" vertex="1" parent="1"><mxGeometry x="1120" y="1060" width="260" height="30" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ================================================================ -->
+  <!-- Page 2 — Request lifecycle sequence                              -->
+  <!-- ================================================================ -->
+  <diagram name="2. Request lifecycle" id="page-sequence">
+    <mxGraphModel dx="1800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="seq_title" value="Request lifecycle: browser -&gt; page.tsx -&gt; Makeswift snapshot -&gt; hydrated template" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1400" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Actor headers -->
+        <mxCell id="a_browser" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1"><mxGeometry x="60"   y="70"  width="160" height="40" as="geometry"/></mxCell>
+        <mxCell id="a_next"    value="Next.js RSC / page.tsx" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1"><mxGeometry x="290"  y="70"  width="200" height="40" as="geometry"/></mxCell>
+        <mxCell id="a_ms_api"  value="Makeswift API (getPageSnapshot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="560"  y="70"  width="230" height="40" as="geometry"/></mxCell>
+        <mxCell id="a_bc"      value="BigCommerce GraphQL (getPageData)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1"><mxGeometry x="860"  y="70"  width="240" height="40" as="geometry"/></mxCell>
+        <mxCell id="a_provider" value="MakeswiftHomePageDataProvider (context)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1170" y="70"  width="270" height="40" as="geometry"/></mxCell>
+        <mxCell id="a_home"    value="MakeswiftHomePage (client)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1470" y="70"  width="200" height="40" as="geometry"/></mxCell>
+
+        <!-- Lifelines -->
+        <mxCell id="ll_browser" style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="140" y="110" as="sourcePoint"/><mxPoint x="140" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="ll_next"    style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="110" as="sourcePoint"/><mxPoint x="390" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="ll_msapi"   style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="675" y="110" as="sourcePoint"/><mxPoint x="675" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="ll_bc"      style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="980" y="110" as="sourcePoint"/><mxPoint x="980" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="ll_prov"    style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1305" y="110" as="sourcePoint"/><mxPoint x="1305" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="ll_home"    style="endArrow=none;html=1;dashed=1;strokeColor=#666" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1570" y="110" as="sourcePoint"/><mxPoint x="1570" y="1000" as="targetPoint"/></mxGeometry></mxCell>
+
+        <!-- Messages -->
+        <mxCell id="m1" value="GET / (locale)" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="140" y="140" as="sourcePoint"/><mxPoint x="390" y="140" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="client.getPageSnapshot('/', { siteVersion, locale })" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="190" as="sourcePoint"/><mxPoint x="675" y="190" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="MakeswiftPageSnapshot (JSON tree of 'ges-home-page-template' + Slot children)" style="endArrow=classic;html=1;strokeColor=#333;dashed=1" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="675" y="240" as="sourcePoint"/><mxPoint x="390" y="240" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="&lt;HomePageDataProvider&gt; wraps &lt;MakeswiftPage snapshot=... /&gt;" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="300" as="sourcePoint"/><mxPoint x="1305" y="300" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Streamable.from(() =&gt; getPageData(currency, token))" style="endArrow=classic;html=1;strokeColor=#c53030" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1305" y="360" as="sourcePoint"/><mxPoint x="980" y="360" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="{ featuredProducts, newestProducts }" style="endArrow=classic;html=1;strokeColor=#c53030;dashed=1" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="980" y="410" as="sourcePoint"/><mxPoint x="1305" y="410" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="context.value = { featuredProducts, newestProducts } (Streamable, not awaited)" style="endArrow=classic;html=1;strokeColor=#7c3aed" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1305" y="470" as="sourcePoint"/><mxPoint x="1570" y="470" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="&lt;MakeswiftPage&gt; resolves type -&gt; MakeswiftHomePage" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="530" as="sourcePoint"/><mxPoint x="1570" y="530" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="hydrates 5 Slot props (top, afterHero, middle, belowNewest, bottom)" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1570" y="580" as="sourcePoint"/><mxPoint x="1570" y="620" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="useMakeswiftHomePageData() -&gt; { featuredProducts, newestProducts }" style="endArrow=classic;html=1;strokeColor=#7c3aed" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1570" y="670" as="sourcePoint"/><mxPoint x="1305" y="670" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="renders: {top} + Slideshow + {afterHero} + FeaturedProductList + {middle} + FeaturedProductCarousel + {belowNewest} + Subscribe + {bottom}" style="endArrow=classic;html=1;strokeColor=#333" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1570" y="740" as="sourcePoint"/><mxPoint x="1570" y="780" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="streamed HTML + RSC payload" style="endArrow=classic;html=1;strokeColor=#333;dashed=1" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="850" as="sourcePoint"/><mxPoint x="140" y="850" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="Suspense boundaries resolve as Streamable data arrives" style="endArrow=classic;html=1;strokeColor=#c53030;dashed=1" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1570" y="900" as="sourcePoint"/><mxPoint x="140" y="900" as="targetPoint"/></mxGeometry></mxCell>
+
+        <mxCell id="note1" value="Note: HomePageDataProvider does NOT await the BC call before rendering. The Streamable is passed into context immediately, and product sections render inside Suspense boundaries that resolve when the promise settles." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="950" width="1600" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ================================================================ -->
+  <!-- Page 3 — Component registry map                                  -->
+  <!-- ================================================================ -->
+  <diagram name="3. Component registry" id="page-registry">
+    <mxGraphModel dx="1800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="rt_title" value="Every component registered on the shared ReactRuntime (available as Slot content in the GES Home Page Template)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1600" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Central runtime -->
+        <mxCell id="rt_hub" value="runtime&#10;(ReactRuntime singleton)&#10;core/lib/makeswift/runtime.ts" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;fontStyle=1;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="820" y="620" width="260" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Group boxes (each contains a table of components) -->
+        <mxCell id="g_layouts" value="Layouts" style="swimlane;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="360" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="l_1" value="layouts-section&#10;Layouts / Section&#10;section/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_layouts"><mxGeometry x="10" y="30" width="340" height="50" as="geometry"/></mxCell>
+        <mxCell id="l_2" value="layouts-sticky-sidebar&#10;Layouts / Sticky Sidebar&#10;sticky-sidebar/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_layouts"><mxGeometry x="10" y="90" width="340" height="50" as="geometry"/></mxCell>
+
+        <mxCell id="g_basic" value="Basic (primitives)" style="swimlane;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="360" height="420" as="geometry"/>
+        </mxCell>
+        <mxCell id="b_1" value="primitive-accordions -- Basic / Accordion&#10;accordion/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="30" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_2" value="primitive-card -- Basic / Card&#10;card/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="85" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_3" value="primitive-carousel -- Basic / Carousel&#10;carousel/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="140" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_4" value="primitive-card-carousel -- Basic / Card Carousel&#10;card-carousel/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="195" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_5" value="bullet-points -- Basic / Bullet Points&#10;bullet-points/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="250" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_6" value="belami-custom-text -- Basic / Custom Text&#10;custom-text/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="305" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="b_7" value="custom-tooltip -- Basic / Tooltip&#10;tooltip/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#6C8EBF;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_basic"><mxGeometry x="10" y="360" width="340" height="45" as="geometry"/></mxCell>
+
+        <mxCell id="g_catalog" value="Catalog" style="swimlane;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="440" y="70" width="360" height="370" as="geometry"/>
+        </mxCell>
+        <mxCell id="c_1" value="arizon-category-list -- Category List&#10;category-list/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="30"  width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="c_2" value="catalog-product-card -- Product Card&#10;product-card/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="85"  width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="c_3" value="primitive-products-list -- Products List&#10;products-list/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="140" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="c_4" value="primitive-products-carousel -- Products Carousel&#10;products-carousel/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="195" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="c_5" value="catalyst-product-grid -- Catalyst / Product Grid&#10;product-grid.tsx" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="250" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="c_6" value="Catalog / Product Detail&#10;product-detail/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalog"><mxGeometry x="10" y="305" width="340" height="45" as="geometry"/></mxCell>
+
+        <mxCell id="g_sections" value="Sections" style="swimlane;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="440" y="460" width="360" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="s_1" value="section-slideshow -- Sections / Slideshow&#10;slideshow/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_sections"><mxGeometry x="10" y="30" width="340" height="40" as="geometry"/></mxCell>
+        <mxCell id="s_2" value="section-subscribe -- Sections / Subscribe&#10;subscribe/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#82B366;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_sections"><mxGeometry x="10" y="75" width="340" height="40" as="geometry"/></mxCell>
+
+        <mxCell id="g_catalyst" value="Catalyst (built-ins)" style="swimlane;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="440" y="610" width="360" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="cy_1" value="catalyst-button-link -- Button&#10;button-link/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#D79B00;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalyst"><mxGeometry x="10" y="30" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="cy_2" value="catalyst-hero-banner -- Hero Banner&#10;hero-banner.tsx" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#D79B00;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalyst"><mxGeometry x="10" y="85" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="cy_3" value="catalyst-promo-banner -- Promo Banner&#10;promo-banner.tsx" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#D79B00;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalyst"><mxGeometry x="10" y="140" width="340" height="45" as="geometry"/></mxCell>
+        <mxCell id="cy_4" value="catalyst-customer-group-slot&#10;customer-group-slot/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#D79B00;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_catalyst"><mxGeometry x="10" y="195" width="340" height="45" as="geometry"/></mxCell>
+
+        <mxCell id="g_ges" value="GES" style="swimlane;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="1120" y="70" width="380" height="1080" as="geometry"/>
+        </mxCell>
+        <mxCell id="ges_home" value="ges-home-page-template ***&#10;GES / Home Page Template&#10;home-page/register.ts" style="rounded=1;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=6;fontSize=11;fontFamily=Consolas;fontStyle=1" vertex="1" parent="g_ges"><mxGeometry x="10" y="30" width="360" height="55" as="geometry"/></mxCell>
+        <mxCell id="ges_1"  value="ges-breadcrumbs&#10;breadcrumbs/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="95"  width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_2"  value="ges-accordions&#10;ges-accordion/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="140" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_3"  value="primitive-accordions-page&#10;ges-accordion-page/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="185" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_4"  value="faq-component -- GES / FAQ's&#10;faq/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="230" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_5"  value="find-show&#10;find-show/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="275" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_6"  value="mega-banner&#10;mega-banner/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="320" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_7"  value="wizard-product-page&#10;wizard/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="365" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_8"  value="custom-btn -- GES / Custom Button&#10;custom-btn/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="410" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_9"  value="print-button -- GES / Print Button&#10;print-button/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="455" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_10" value="contact-us-page&#10;contact-us/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="500" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_11" value="date-schedule-page&#10;date-schedule/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="545" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_12" value="move-in-page&#10;move-in/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="590" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_13" value="move-out-page&#10;move-out/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="635" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_14" value="quick-facts-page&#10;quick-facts/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="680" width="360" height="40" as="geometry"/></mxCell>
+        <mxCell id="ges_15" value="show-microsite-page&#10;show-microsite/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#B85450;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_ges"><mxGeometry x="10" y="725" width="360" height="40" as="geometry"/></mxCell>
+
+        <mxCell id="g_chrome" value="Site chrome (hidden)" style="swimlane;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontStyle=1;startSize=24;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="1520" y="70" width="340" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="ch_1" value="site-header&#10;site-header/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#9673A6;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_chrome"><mxGeometry x="10" y="30" width="320" height="50" as="geometry"/></mxCell>
+        <mxCell id="ch_2" value="site-footer&#10;site-footer/register.ts" style="rounded=1;html=1;fillColor=#ffffff;strokeColor=#9673A6;align=left;spacingLeft=6;fontSize=10;fontFamily=Consolas" vertex="1" parent="g_chrome"><mxGeometry x="10" y="90" width="320" height="50" as="geometry"/></mxCell>
+
+        <!-- Edges from each group to central runtime -->
+        <mxCell id="rg1" style="endArrow=classic;html=1;strokeColor=#6C8EBF;strokeWidth=2" edge="1" parent="1" source="g_layouts" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg2" style="endArrow=classic;html=1;strokeColor=#6C8EBF;strokeWidth=2" edge="1" parent="1" source="g_basic" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg3" style="endArrow=classic;html=1;strokeColor=#82B366;strokeWidth=2" edge="1" parent="1" source="g_catalog" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg4" style="endArrow=classic;html=1;strokeColor=#82B366;strokeWidth=2" edge="1" parent="1" source="g_sections" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg5" style="endArrow=classic;html=1;strokeColor=#D79B00;strokeWidth=2" edge="1" parent="1" source="g_catalyst" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg6" style="endArrow=classic;html=1;strokeColor=#B85450;strokeWidth=2" edge="1" parent="1" source="g_ges" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="rg7" style="endArrow=classic;html=1;strokeColor=#9673A6;strokeWidth=2" edge="1" parent="1" source="g_chrome" target="rt_hub"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="rt_note" value="*** GES Home Page Template is one of many registered components. Its Slot props accept any other entry in this map (including nested Sections, Layouts, Catalog primitives, and GES components)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="820" y="800" width="380" height="80" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ================================================================ -->
+  <!-- Page 4 — Slot composition inside MakeswiftHomePage               -->
+  <!-- ================================================================ -->
+  <diagram name="4. Slot composition" id="page-slots">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="slt_title" value="Slot composition &amp; alignment inside MakeswiftHomePage" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1200" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="slt_sub" value="Left column: registered Slot definitions from home-page/register.ts. Right column: full-bleed render sequence in home-page/client.tsx (fixed sections in green, editor-controlled Slots in blue)." style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#555" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Register side -->
+        <mxCell id="reg_box" value="home-page/register.ts" style="swimlane;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;fontStyle=1;startSize=26;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="520" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="reg_top"     value="top: Slot({ unstable_placeholder: { builderOnly: true } })"           style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="reg_box"><mxGeometry x="20" y="40"  width="480" height="50" as="geometry"/></mxCell>
+        <mxCell id="reg_ah"      value="afterHero: Slot(...)"           style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="reg_box"><mxGeometry x="20" y="200" width="480" height="50" as="geometry"/></mxCell>
+        <mxCell id="reg_mid"     value="middle: Slot(...)"              style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="reg_box"><mxGeometry x="20" y="360" width="480" height="50" as="geometry"/></mxCell>
+        <mxCell id="reg_bn"      value="belowNewest: Slot(...)"         style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="reg_box"><mxGeometry x="20" y="520" width="480" height="50" as="geometry"/></mxCell>
+        <mxCell id="reg_bot"     value="bottom: Slot(...)"              style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="reg_box"><mxGeometry x="20" y="720" width="480" height="50" as="geometry"/></mxCell>
+
+        <!-- Render side -->
+        <mxCell id="rn_box" value="home-page/client.tsx  &amp;mdash;  render tree" style="swimlane;html=1;fillColor=#F5F5F5;strokeColor=#666;fontStyle=1;startSize=26;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="620" y="100" width="720" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="rn_wrap" value="&lt;div style={{ position: 'relative', left: '50%', width: '100vw', transform: 'translateX(-50%)' }}&gt;&#10;/* full-bleed wrapper: escapes any max-width parent */" style="rounded=1;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;spacingLeft=8;spacingTop=6;fontFamily=Consolas;fontSize=10;verticalAlign=top" vertex="1" parent="rn_box"><mxGeometry x="20" y="40" width="680" height="60" as="geometry"/></mxCell>
+
+        <mxCell id="rn_top"     value="{top}"                                            style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="120" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_slide"   value="&lt;Slideshow /&gt;  (Catalyst slideshow feature)"      style="rounded=1;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="180" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_ah"      value="{afterHero}"                                      style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="240" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_fpl"     value="&lt;FeaturedProductList products={featuredProducts} title=... cta=... /&gt;"   style="rounded=1;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="300" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_mid"     value="{middle}"                                         style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="360" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_fpc"     value="&lt;FeaturedProductCarousel products={newestProducts} title=... /&gt;"          style="rounded=1;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="420" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_bn"      value="{belowNewest}"                                    style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="480" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_sub"     value="&lt;Subscribe /&gt;   (newsletter component)"           style="rounded=1;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="540" width="680" height="45" as="geometry"/></mxCell>
+        <mxCell id="rn_bot"     value="{bottom}"                                         style="rounded=1;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;spacingLeft=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="rn_box"><mxGeometry x="20" y="600" width="680" height="45" as="geometry"/></mxCell>
+
+        <mxCell id="rn_note" value="Alignment rules&#10;- Fixed sections (green) always render, even when the Slot above/below is empty.&#10;- Empty Slots collapse to null on published pages (`unstable_placeholder: builderOnly` hides the drop zone outside the editor).&#10;- The full-bleed wrapper means Slot content is expected to manage its own inner max-width / padding; drop a Layouts / Section component if you need centered content." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=10" vertex="1" parent="rn_box">
+          <mxGeometry x="20" y="670" width="680" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- Slot -> render mappings -->
+        <mxCell id="ma_top" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1" edge="1" parent="1" source="reg_top" target="rn_top"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ma_ah"  style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1" edge="1" parent="1" source="reg_ah"  target="rn_ah"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ma_mid" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1" edge="1" parent="1" source="reg_mid" target="rn_mid"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ma_bn"  style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1" edge="1" parent="1" source="reg_bn"  target="rn_bn"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ma_bot" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;dashed=1" edge="1" parent="1" source="reg_bot" target="rn_bot"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ================================================================ -->
+  <!-- Page 5 — Data & context (Streamable flow)                        -->
+  <!-- ================================================================ -->
+  <diagram name="5. Data / context flow" id="page-data">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="d_title" value="BC data -&gt; Streamable -&gt; React context -&gt; template" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1200" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d_page_data" value="page-data.ts (BC GraphQL query)&#10;&#10;site.featuredProducts { ... }&#10;site.newestProducts { ... }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="360" height="130" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d_dp" value="HomePageDataProvider  (server component)&#10;core/app/[locale]/(default)/home-page-data-provider.tsx&#10;&#10;const streamablePageData = Streamable.from(async () =&gt; {&#10;  const token    = await getSessionCustomerAccessToken();&#10;  const currency = await getPreferredCurrencyCode();&#10;  return getPageData(currency, token);&#10;});&#10;&#10;const streamableFeaturedProducts = Streamable.from(async () =&gt; {&#10;  const data = await streamablePageData;&#10;  return productCardTransformer(&#10;    removeEdgesAndNodes(data.site.featuredProducts), format);&#10;});&#10;&#10;const streamableNewestProducts   = Streamable.from(async () =&gt; {&#10;  const data = await streamablePageData;&#10;  return productCardTransformer(&#10;    removeEdgesAndNodes(data.site.newestProducts), format);&#10;});" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#c53030;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="480" y="80" width="600" height="380" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d_ctx_provider" value="&lt;MakeswiftHomePageDataProvider&#10;   value={{ featuredProducts, newestProducts }}&gt;&#10;&#10;home-page/data-context.tsx&#10;createContext&lt;HomePageData&gt;(null)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#7c3aed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1160" y="80" width="380" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d_use_hook" value="useMakeswiftHomePageData()  (in client tree)&#10;&#10;return useContext(HomePageDataContext) ?? fallbackHomePageData;&#10;fallback = { featuredProducts: [], newestProducts: [] }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#7c3aed;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1160" y="300" width="380" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d_fpl" value="&lt;FeaturedProductList products={featuredProducts} /&gt;&#10;&#10;renders inside Suspense; resolves when Streamable settles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1160" y="480" width="380" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_fpc" value="&lt;FeaturedProductCarousel products={newestProducts} /&gt;&#10;&#10;renders inside Suspense; resolves when Streamable settles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1160" y="610" width="380" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="d_e1" value="await inside Streamable" style="endArrow=classic;html=1;strokeColor=#c53030;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="d_page_data" target="d_dp"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d_e2" value="context.value =" style="endArrow=classic;html=1;strokeColor=#7c3aed;strokeWidth=2;labelBackgroundColor=#ffffff" edge="1" parent="1" source="d_dp" target="d_ctx_provider"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d_e3" value="useContext" style="endArrow=classic;html=1;strokeColor=#7c3aed;strokeWidth=2;dashed=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="d_ctx_provider" target="d_use_hook"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d_e4" style="endArrow=classic;html=1;strokeColor=#2f855a;strokeWidth=2" edge="1" parent="1" source="d_use_hook" target="d_fpl"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d_e5" style="endArrow=classic;html=1;strokeColor=#2f855a;strokeWidth=2" edge="1" parent="1" source="d_use_hook" target="d_fpc"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Explanations -->
+        <mxCell id="d_why" value="Why the indirection?&#10;&#10;- Server components fetch BC data (auth, currency, GraphQL) which can't run in the browser.&#10;- The template itself is a client component (Makeswift Slots need a client boundary).&#10;- Streamable + React context lets the server hand promises to the client without awaiting them, so the shell paints immediately and product sections stream in.&#10;- Fallback = empty arrays: the template still renders inside the Makeswift Builder iframe where no data provider is mounted." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="1080" height="200" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

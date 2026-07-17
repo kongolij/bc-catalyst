@@ -13,7 +13,13 @@ runtime.registerComponent(MakeswiftCatalystProductDetail, {
     previewProductId: Combobox({
       label: 'Preview product (editor only)',
       async getOptions(query) {
+        // eslint-disable-next-line no-console
+        console.log('[catalyst-product-detail combobox] getOptions', { query });
+
         const products = await searchProducts(query);
+
+        // eslint-disable-next-line no-console
+        console.log('[catalyst-product-detail combobox] mapped', { count: products.length });
 
         return products.map((product) => ({
           id: product.entityId.toString(),

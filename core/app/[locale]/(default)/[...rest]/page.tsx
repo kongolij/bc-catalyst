@@ -31,22 +31,47 @@ export default async function CatchAllPage({ params, searchParams }: Props) {
     siteVersion: await getSiteVersion(),
   });
 
+  console.log('[catch-all] snapshot lookup', { pathname, hasSnapshot: !!snapshot });
+
   if (!snapshot) notFound();
 
   const resolvedSearchParams = await searchParams;
-  const previewProductRaw = resolvedSearchParams.previewProduct;
+  const previewProductRaw =
+    Object.entries(resolvedSearchParams).find(
+      ([key]) => key.toLowerCase() === 'previewproduct',
+    )?.[1] ?? undefined;
   const previewProductId = Array.isArray(previewProductRaw)
     ? previewProductRaw[0]
     : previewProductRaw;
   const previewProductNumber = previewProductId ? Number(previewProductId) : NaN;
 
+  console.log('[catch-all] preview branch check', {
+    pathname,
+    searchParamKeys: Object.keys(resolvedSearchParams),
+    previewProductRaw,
+    previewProductId,
+    previewProductNumber,
+    isPdpTemplate: pathname === '/pdp-template',
+  });
+
   if (pathname === '/pdp-template' && !Number.isNaN(previewProductNumber)) {
     const customerAccessToken = await getSessionCustomerAccessToken();
+
+    console.log('[catch-all] entering preview branch', {
+      previewProductNumber,
+      hasToken: !!customerAccessToken,
+    });
 
     const contextValue = await buildCatalystProductContextValue({
       productId: previewProductNumber,
       customerAccessToken,
       searchParams,
+    });
+
+    console.log('[catch-all] built context value', {
+      previewProductNumber,
+      hasContextValue: !!contextValue,
+      entityId: contextValue?.entityId,
     });
 
     if (contextValue) {

@@ -1,0 +1,184 @@
+<mxfile host="app.diagrams.net" agent="claude-code" version="24.7.5">
+  <!-- =============================================================== -->
+  <!-- Page 1 - Overview: registration + live PDP + editor preview     -->
+  <!-- =============================================================== -->
+  <diagram name="1. Overview" id="page-overview">
+    <mxGraphModel dx="2000" dy="1500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Makeswift &amp;mdash; Catalyst PDP Template Architecture (bc-catalyst/core)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1600" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Three flows share a single ReactRuntime and a single /pdp-template snapshot: (a) client-side registration, (b) live PDP request that builds a real &lt;ProductDetail /&gt; JSX server-side and hands it to a React context, (c) Makeswift editor preview using the same helper with a ?previewProduct=&amp;lt;id&amp;gt; query param." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#555" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1800" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- =========================================================== -->
+        <!-- Swimlane 1: Registration                                    -->
+        <!-- =========================================================== -->
+        <mxCell id="lane_reg" value="Registration flow (browser boot)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#DAE8FC;strokeColor=#6C8EBF" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="520" height="1000" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reg_provider" value="MakeswiftProvider (client)&#10;&#10;core/components/makeswift/provider.tsx&#10;&#10;'use client';&#10;wraps app in &lt;ReactRuntimeProvider&gt;&#10;side-effect: import '~/lib/makeswift/components'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="50" width="480" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reg_barrel" value="components/index.ts (barrel)&#10;&#10;core/lib/makeswift/components/index.ts&#10;&#10;imports every ./&lt;component&gt;/register&#10;line added: './catalyst-product-detail/register'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="200" width="480" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reg_register" value="catalyst-product-detail/register.ts&#10;&#10;runtime.registerComponent(MakeswiftCatalystProductDetail, {&#10;  type: 'catalog-catalyst-product-detail',&#10;  label: 'Catalog / Product Detail (Catalyst)',&#10;  props: {&#10;    className: Style(),&#10;    previewProductId: Combobox({&#10;      label: 'Preview product (editor only)',&#10;      getOptions: (q) =&gt; searchProducts(q).then(...)&#10;    }),&#10;  },&#10;});" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="340" width="480" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reg_runtime" value="runtime.ts (module-level singleton)&#10;&#10;core/lib/makeswift/runtime.ts&#10;export const runtime = new ReactRuntime();&#10;&#10;every register.ts mutates this same instance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="600" width="480" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="reg_builder" value="Makeswift Builder (external, authoring)&#10;&#10;- opens /pdp-template&#10;- drags 'Catalog / Product Detail (Catalyst)'&#10;- adds surrounding sections/cards/text/banners&#10;- sets previewProductId in right panel&#10;- publishes -&gt; one snapshot used everywhere" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;dashed=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_reg">
+          <mxGeometry x="20" y="750" width="480" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- Reg arrows -->
+        <mxCell id="ea1" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2" edge="1" parent="1" source="reg_provider" target="reg_barrel"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea2" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2" edge="1" parent="1" source="reg_barrel" target="reg_register"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea3" value="registers on" style="endArrow=classic;html=1;strokeColor=#2f855a;strokeWidth=2;fontSize=11" edge="1" parent="1" source="reg_register" target="reg_runtime"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea4" value="type available in editor" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;fontSize=11;dashed=1" edge="1" parent="1" source="reg_runtime" target="reg_builder"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- =========================================================== -->
+        <!-- Swimlane 2: Live PDP flow                                   -->
+        <!-- =========================================================== -->
+        <mxCell id="lane_live" value="Live PDP flow (server request)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#F8CECC;strokeColor=#B85450" vertex="1" parent="1">
+          <mxGeometry x="600" y="110" width="600" height="700" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="live_url" value="Browser URL&#10;/products/g123-...-.html&#10;&#10;Middleware rewrites internally to&#10;/product/{entityId}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#B85450;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11;dashed=1" vertex="1" parent="lane_live">
+          <mxGeometry x="20" y="50" width="560" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="live_page" value="app/[locale]/(default)/product/[slug]/page.tsx&#10;&#10;const productId = Number(slug);&#10;const baseProduct = await getProduct(productId, ...);&#10;const [snapshot, contextValue] = await Promise.all([&#10;  getPdpTemplateSnapshot(),&#10;  buildCatalystProductContextValue({ productId, ... }),&#10;]);" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#B85450;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_live">
+          <mxGeometry x="20" y="160" width="560" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="live_helper" value="buildCatalystProductContextValue() (server)&#10;&#10;catalyst-product-detail/build-context-value.tsx&#10;- getProduct + streamable pricing/images (React.cache dedupes)&#10;- assembles full Catalyst tree:&#10;    &lt;ProductAnalyticsProvider&gt;&#10;      &lt;ProductDetail action={addToCart} ... /&gt;&#10;    &lt;/ProductAnalyticsProvider&gt;&#10;- returns { entityId, productDetail: ReactNode }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#B85450;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_live">
+          <mxGeometry x="20" y="330" width="560" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="live_render" value="return (&#10;  &lt;CatalystProductProvider value={contextValue}&gt;&#10;    &lt;MakeswiftPage snapshot={snapshot} /&gt;&#10;  &lt;/CatalystProductProvider&gt;&#10;  // + related products / reviews / schema below&#10;);" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#8250df;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_live">
+          <mxGeometry x="20" y="550" width="560" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- Live arrows -->
+        <mxCell id="ela1" style="endArrow=classic;html=1;strokeColor=#B85450;strokeWidth=2" edge="1" parent="1" source="live_url" target="live_page"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ela2" style="endArrow=classic;html=1;strokeColor=#B85450;strokeWidth=2" edge="1" parent="1" source="live_page" target="live_helper"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ela3" value="context value" style="endArrow=classic;html=1;strokeColor=#8250df;strokeWidth=2;fontSize=11" edge="1" parent="1" source="live_helper" target="live_render"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- =========================================================== -->
+        <!-- Swimlane 3: Editor preview flow                             -->
+        <!-- =========================================================== -->
+        <mxCell id="lane_prev" value="Editor preview flow (?previewProduct=&amp;lt;id&amp;gt;)" style="swimlane;fontSize=14;fontStyle=1;html=1;startSize=30;fillColor=#FFE6CC;strokeColor=#D79B00" vertex="1" parent="1">
+          <mxGeometry x="1240" y="110" width="600" height="700" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="prev_url" value="Editor URL&#10;/pdp-template?previewProduct=123&#10;&#10;editor iframe fetches page in preview mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#D79B00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11;dashed=1" vertex="1" parent="lane_prev">
+          <mxGeometry x="20" y="50" width="560" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="prev_page" value="app/[locale]/(default)/[...rest]/page.tsx&#10;&#10;const snapshot = await client.getPageSnapshot(pathname, ...);&#10;if (pathname === '/pdp-template' &amp;amp;&amp;amp; previewProductNumber) {&#10;  const contextValue = await buildCatalystProductContextValue({&#10;    productId: previewProductNumber, ...&#10;  });&#10;  return (&lt;CatalystProductProvider value={contextValue}&gt;&#10;           &lt;MakeswiftPage snapshot={snapshot} /&gt;&#10;         &lt;/CatalystProductProvider&gt;);&#10;}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#D79B00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_prev">
+          <mxGeometry x="20" y="160" width="560" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="prev_helper" value="Same buildCatalystProductContextValue() (server)&#10;&#10;identical helper as live flow&#10;productId comes from ?previewProduct=&amp;lt;id&amp;gt; query&#10;editor sees a REAL Catalyst PDP inside the block&#10;swap the query param to preview other products" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#D79B00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=11" vertex="1" parent="lane_prev">
+          <mxGeometry x="20" y="400" width="560" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="prev_render" value="return (&#10;  &lt;HomePageDataProvider&gt;&#10;    &lt;CatalystProductProvider value={contextValue}&gt;&#10;      &lt;MakeswiftPage snapshot={snapshot} /&gt;&#10;    &lt;/CatalystProductProvider&gt;&#10;  &lt;/HomePageDataProvider&gt;&#10;);" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#8250df;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="lane_prev">
+          <mxGeometry x="20" y="570" width="560" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Preview arrows -->
+        <mxCell id="pra1" style="endArrow=classic;html=1;strokeColor=#D79B00;strokeWidth=2" edge="1" parent="1" source="prev_url" target="prev_page"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pra2" style="endArrow=classic;html=1;strokeColor=#D79B00;strokeWidth=2" edge="1" parent="1" source="prev_page" target="prev_helper"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pra3" value="context value" style="endArrow=classic;html=1;strokeColor=#8250df;strokeWidth=2;fontSize=11" edge="1" parent="1" source="prev_helper" target="prev_render"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- =========================================================== -->
+        <!-- Bottom band: Snapshot + registered block                    -->
+        <!-- =========================================================== -->
+        <mxCell id="snap" value="&lt;MakeswiftPage snapshot=... /&gt;   (@makeswift/runtime/next)&#10;&#10;- Hydrates every registered component in the /pdp-template layout&#10;- Editors can drag Section/Card/Text/Banner ABOVE, BELOW, LEFT or RIGHT of the PDP block&#10;- The PDP block itself is one instance of &lt;MakeswiftCatalystProductDetail /&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="600" y="850" width="1240" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="block" value="MakeswiftCatalystProductDetail (client)&#10;&#10;catalyst-product-detail/client.tsx&#10;'use client';&#10;const ctx = useContext(CatalystProductContext);&#10;if (ctx?.productDetail) return &lt;div className={className}&gt;{ctx.productDetail}&lt;/div&gt;;&#10;// no context -&gt; placeholder for editor pages without a preview product&#10;&#10;What actually renders inside the &amp;lt;div&amp;gt; is the FULL Catalyst PDP tree:&#10;  images / variants / prices / add-to-cart / accordions / wishlist / analytics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="600" y="1020" width="1240" height="220" as="geometry"/>
+        </mxCell>
+
+        <!-- Live + Preview -> snapshot -->
+        <mxCell id="lp1" value="children" style="endArrow=classic;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=11" edge="1" parent="1" source="live_render" target="snap"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pp1" value="children" style="endArrow=classic;html=1;strokeColor=#D79B00;strokeWidth=2;fontSize=11" edge="1" parent="1" source="prev_render" target="snap"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="snap_to_block" value="renders block by type" style="endArrow=classic;html=1;strokeColor=#2f855a;strokeWidth=2;fontSize=11" edge="1" parent="1" source="snap" target="block"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Registration -> Snapshot (dashed, author-time) -->
+        <mxCell id="reg_to_snap" value="published template" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;fontSize=11;dashed=1" edge="1" parent="1" source="reg_builder" target="snap"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- =============================================================== -->
+  <!-- Page 2 - Context shape and data journey                         -->
+  <!-- =============================================================== -->
+  <diagram name="2. Context journey" id="page-context">
+    <mxGraphModel dx="2000" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="t2" value="Context journey: server assembly -&amp;gt; client consumption" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1500" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_bc" value="BigCommerce GraphQL&#10;&#10;- getProduct(entityId, token)&#10;- getStreamableProduct(...)&#10;- getProductPricingAndRelatedProducts(...)&#10;- React.cache dedupes duplicate calls" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2b6cb0;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="360" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_helper" value="buildCatalystProductContextValue() (server)&#10;&#10;- Streamable.from(async () =&gt; ...) for pricing, images,&#10;  cta label, cta disabled, accordions, analytics&#10;- productOptionsTransformer, pricesTransformer&#10;- imports addToCart server action" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE8E8;strokeColor=#B85450;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="480" y="90" width="500" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_jsx" value="ReactNode assembled server-side&#10;&#10;&lt;ProductAnalyticsProvider data={streamableAnalyticsData}&gt;&#10;  &lt;ProductDetail&#10;    action={addToCart}&#10;    additionalActions={&lt;WishlistButton .../&gt;}&#10;    ctaLabel={streameableCtaLabel}&#10;    ctaDisabled={streameableCtaDisabled}&#10;    fields={productOptionsTransformer(...)}&#10;    product={{ id, title, description, images, price,&#10;              subtitle, rating, accordions }} /&gt;&#10;&lt;/ProductAnalyticsProvider&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1040" y="90" width="580" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_value" value="CatalystProductContextValue&#10;&#10;{ entityId: string,&#10;  productDetail: ReactNode  // the JSX above }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#8250df;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="480" y="380" width="500" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_prov" value="&lt;CatalystProductProvider value={contextValue}&gt;&#10;  &lt;MakeswiftPage snapshot={snapshot} /&gt;&#10;&lt;/CatalystProductProvider&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E6FF;strokeColor=#8250df;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="480" y="540" width="500" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_ms" value="&lt;MakeswiftPage&gt; renders template&#10;&#10;- Iterates the /pdp-template snapshot&#10;- Instantiates every registered component&#10;- When it hits type 'catalog-catalyst-product-detail'&#10;  -&gt; renders &lt;MakeswiftCatalystProductDetail /&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF6D5;strokeColor=#b7791f;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="480" y="700" width="500" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="c_client" value="MakeswiftCatalystProductDetail (client)&#10;&#10;'use client';&#10;const ctx = useContext(CatalystProductContext);&#10;if (ctx?.productDetail)&#10;  return &lt;div className={className}&gt;{ctx.productDetail}&lt;/div&gt;;&#10;// else -&gt; placeholder for editor pages without preview product" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DFF3E4;strokeColor=#2f855a;align=left;verticalAlign=top;spacingLeft=8;spacingTop=8;fontFamily=Consolas;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1040" y="700" width="580" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- arrows -->
+        <mxCell id="ca1" value="fetch" style="endArrow=classic;html=1;strokeColor=#2b6cb0;strokeWidth=2;fontSize=11" edge="1" parent="1" source="c_bc" target="c_helper"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca2" value="assembles" style="endArrow=classic;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=11" edge="1" parent="1" source="c_helper" target="c_jsx"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca3" value="wraps as value" style="endArrow=classic;html=1;strokeColor=#8250df;strokeWidth=2;fontSize=11" edge="1" parent="1" source="c_jsx" target="c_value"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca4" style="endArrow=classic;html=1;strokeColor=#8250df;strokeWidth=2" edge="1" parent="1" source="c_value" target="c_prov"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca5" value="children" style="endArrow=classic;html=1;strokeColor=#b7791f;strokeWidth=2;fontSize=11" edge="1" parent="1" source="c_prov" target="c_ms"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca6" value="type match" style="endArrow=classic;html=1;strokeColor=#2f855a;strokeWidth=2;fontSize=11" edge="1" parent="1" source="c_ms" target="c_client"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ca7" value="useContext -&gt; renders JSX" style="endArrow=classic;html=1;strokeColor=#8250df;strokeWidth=2;dashed=1;fontSize=11" edge="1" parent="1" source="c_client" target="c_jsx"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

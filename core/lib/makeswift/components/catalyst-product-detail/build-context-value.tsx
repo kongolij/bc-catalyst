@@ -32,7 +32,18 @@ export async function buildCatalystProductContextValue({
   searchParams,
   detachedWishlistFormId = 'product-add-to-wishlist-form',
 }: BuildOptions): Promise<CatalystProductContextValue | null> {
+  console.log('[catalyst-product-detail] buildCatalystProductContextValue called', {
+    productId,
+    hasToken: !!customerAccessToken,
+  });
+
   const baseProduct = await getProduct(productId, customerAccessToken);
+
+  console.log('[catalyst-product-detail] baseProduct lookup', {
+    productId,
+    found: !!baseProduct,
+    name: baseProduct?.name,
+  });
 
   if (!baseProduct) return null;
 
