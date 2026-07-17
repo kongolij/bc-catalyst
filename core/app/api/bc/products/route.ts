@@ -145,13 +145,23 @@ export async function GET(req: NextRequest) {
 
   try {
     if (search) {
+      console.log('[/api/bc/products] search request', { searchTerm: search });
+
       const result = await client.fetch({
         document: SearchProductsQuery,
         variables: { searchTerm: search, first: 20 },
         fetchOptions: { next: { revalidate } },
       });
 
-      const products = result.data.site.search.searchProducts.products.edges?.map((e) => e.node) ?? [];
+      const edges = result.data.site.search.searchProducts.products.edges ?? [];
+      const products = edges.map((e) => e.node);
+
+      console.log('[/api/bc/products] search result', {
+        searchTerm: search,
+        count: products.length,
+        firstProduct: products[0] ?? null,
+        rawEdgesLength: edges.length,
+      });
 
       return NextResponse.json(products);
     }
