@@ -1,4 +1,6 @@
 import { removeEdgesAndNodes } from '@bigcommerce/catalyst-client';
+import { Page as MakeswiftPage } from '@makeswift/runtime/next';
+import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
@@ -12,6 +14,21 @@ import { pricesTransformer } from '~/data-transformers/prices-transformer';
 import { productCardTransformer } from '~/data-transformers/product-card-transformer';
 import { productOptionsTransformer } from '~/data-transformers/product-options-transformer';
 import { getPreferredCurrencyCode } from '~/lib/currency';
+import { client as makeswiftClient } from '~/lib/makeswift/client';
+
+const PDP_TEMPLATE_PATH = '/__pdp-template';
+
+async function getPdpTemplateSnapshot() {
+  try {
+    return await makeswiftClient.getPageSnapshot(PDP_TEMPLATE_PATH, {
+      siteVersion: await getSiteVersion(),
+    });
+  } catch (err) {
+    console.warn('[pdp template] failed to fetch snapshot', err);
+
+    return null;
+  }
+}
 
 import { addToCart } from './_actions/add-to-cart';
 import { ProductAnalyticsProvider } from './_components/product-analytics-provider';
@@ -274,6 +291,8 @@ export default async function Product({ params, searchParams }: Props) {
     return productCardTransformer(relatedProducts, format);
   });
 
+  const pdpTemplateSnapshot = await getPdpTemplateSnapshot();
+
   const streamableAnalyticsData = Streamable.from(async () => {
     const [extendedProduct, pricingProduct] = await Streamable.all([
       streamableProduct,
@@ -325,6 +344,8 @@ export default async function Product({ params, searchParams }: Props) {
           thumbnailLabel={t('ProductDetails.thumbnail')}
         />
       </ProductAnalyticsProvider>
+
+      {pdpTemplateSnapshot ? <MakeswiftPage snapshot={pdpTemplateSnapshot} /> : null}
 
       <FeaturedProductCarousel
         cta={{ label: t('RelatedProducts.cta'), href: '/shop-all' }}
