@@ -16,7 +16,7 @@ import { productOptionsTransformer } from '~/data-transformers/product-options-t
 import { getPreferredCurrencyCode } from '~/lib/currency';
 import { client as makeswiftClient } from '~/lib/makeswift/client';
 
-const PDP_TEMPLATE_PATH = '/__pdp-template';
+const PDP_TEMPLATE_PATH = '/pdp-template';
 
 async function getPdpTemplateSnapshot() {
   try {
