@@ -1,5 +1,6 @@
 import { Page as MakeswiftPage } from '@makeswift/runtime/next';
 import { getSiteVersion } from '@makeswift/runtime/next/server';
+import { draftMode } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { SearchParams } from 'nuqs/server';
 
@@ -38,8 +39,15 @@ export default async function CatchAllPage({ params, searchParams }: Props) {
   const previewProductNumber = previewProductId ? Number(previewProductId) : NaN;
 
   // Block direct browsing of the internal PDP template.
-  // It is only usable with ?previewProduct=<id> (or via product/[slug] snapshot fetch).
-  if (pathname === '/pdp-template' && Number.isNaN(previewProductNumber)) {
+  // Allowed contexts: Makeswift editor (draft mode) OR ?previewProduct=<id>
+  // (product/[slug] fetches the snapshot directly, not via this route).
+  const isDraft = (await draftMode()).isEnabled;
+
+  if (
+    pathname === '/pdp-template' &&
+    Number.isNaN(previewProductNumber) &&
+    !isDraft
+  ) {
     console.log('[catch-all] blocking direct /pdp-template browse');
     notFound();
   }
