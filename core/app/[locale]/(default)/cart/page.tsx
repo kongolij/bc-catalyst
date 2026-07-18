@@ -1,3 +1,5 @@
+import { MakeswiftComponent } from '@makeswift/runtime/next';
+import { getSiteVersion } from '@makeswift/runtime/next/server';
 import { Metadata } from 'next';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
 
@@ -5,6 +7,11 @@ import { Streamable } from '@/vibes/soul/lib/streamable';
 import { Cart as CartComponent, CartEmptyState } from '@/vibes/soul/sections/cart';
 import { CartAnalyticsProvider } from '~/app/[locale]/(default)/cart/_components/cart-analytics-provider';
 import { getCartId } from '~/lib/cart';
+import { client as makeswiftClient } from '~/lib/makeswift/client';
+import {
+  CART_SLOT_SNAPSHOT_ID,
+  CART_SLOT_TYPE,
+} from '~/lib/makeswift/components/cart-slot/register';
 import { exists } from '~/lib/utils';
 
 import { redirectToCheckout } from './_actions/redirect-to-checkout';
@@ -164,6 +171,16 @@ export default async function Cart({ params }: Props) {
   const showShippingForm =
     shippingConsignment?.address && !shippingConsignment.selectedShippingOption;
 
+  const cartSlotSnapshot = await makeswiftClient
+    .getComponentSnapshot(CART_SLOT_SNAPSHOT_ID, {
+      siteVersion: await getSiteVersion(),
+    })
+    .catch((err: unknown) => {
+      console.warn('[cart-slot] failed to fetch snapshot', err);
+
+      return null;
+    });
+
   return (
     <>
       <CartAnalyticsProvider data={Streamable.from(() => getAnalyticsData(cartId))}>
@@ -291,6 +308,13 @@ export default async function Cart({ params }: Props) {
           title={t('title')}
         />
       </CartAnalyticsProvider>
+      {cartSlotSnapshot ? (
+        <MakeswiftComponent
+          label="Cart Slot"
+          snapshot={cartSlotSnapshot}
+          type={CART_SLOT_TYPE}
+        />
+      ) : null}
       <CartViewed
         currencyCode={cart.currencyCode}
         lineItems={lineItems}
