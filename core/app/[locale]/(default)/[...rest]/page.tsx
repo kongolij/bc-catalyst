@@ -27,14 +27,6 @@ export default async function CatchAllPage({ params, searchParams }: Props) {
   const { rest } = await params;
   const pathname = '/' + rest.join('/');
 
-  const snapshot = await client.getPageSnapshot(pathname, {
-    siteVersion: await getSiteVersion(),
-  });
-
-  console.log('[catch-all] snapshot lookup', { pathname, hasSnapshot: !!snapshot });
-
-  if (!snapshot) notFound();
-
   const resolvedSearchParams = await searchParams;
   const previewProductRaw =
     Object.entries(resolvedSearchParams).find(
@@ -44,6 +36,21 @@ export default async function CatchAllPage({ params, searchParams }: Props) {
     ? previewProductRaw[0]
     : previewProductRaw;
   const previewProductNumber = previewProductId ? Number(previewProductId) : NaN;
+
+  // Block direct browsing of the internal PDP template.
+  // It is only usable with ?previewProduct=<id> (or via product/[slug] snapshot fetch).
+  if (pathname === '/pdp-template' && Number.isNaN(previewProductNumber)) {
+    console.log('[catch-all] blocking direct /pdp-template browse');
+    notFound();
+  }
+
+  const snapshot = await client.getPageSnapshot(pathname, {
+    siteVersion: await getSiteVersion(),
+  });
+
+  console.log('[catch-all] snapshot lookup', { pathname, hasSnapshot: !!snapshot });
+
+  if (!snapshot) notFound();
 
   console.log('[catch-all] preview branch check', {
     pathname,
