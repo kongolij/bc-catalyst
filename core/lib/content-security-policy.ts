@@ -4,13 +4,13 @@ const makeswiftEnabled = !!process.env.MAKESWIFT_SITE_API_KEY;
 
 const makeswiftBaseUrl = process.env.MAKESWIFT_BASE_URL || 'https://app.makeswift.com';
 
-const frameAncestors = makeswiftEnabled ? makeswiftBaseUrl : 'none';
+const frameAncestors = makeswiftEnabled ? [makeswiftBaseUrl, "'self'"] : ["'none'"];
 
 // customize the directives as needed
 export const cspHeader = builder({
   directives: {
     baseUri: ['self'],
-    frameAncestors: [frameAncestors],
+    frameAncestors,
     // formAction: ['self'],
     // defaultSrc: ['self'],
     // scriptSrc: ['self'],
