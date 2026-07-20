@@ -71,6 +71,76 @@ const GetProductsByEntityIdsQuery = graphql(`
   }
 `);
 
+const GetProductsByGroupQuery = graphql(`
+  query BcProductsGetByGroup($first: Int) {
+    site {
+      featuredProducts(first: $first) {
+        edges {
+          node {
+            entityId
+            name
+            path
+            defaultImage { url(width: 500) altText }
+            brand { name path }
+            prices {
+              price { value currencyCode }
+              basePrice { value currencyCode }
+              retailPrice { value currencyCode }
+              salePrice { value currencyCode }
+              priceRange {
+                min { value currencyCode }
+                max { value currencyCode }
+              }
+            }
+          }
+        }
+      }
+      newestProducts(first: $first) {
+        edges {
+          node {
+            entityId
+            name
+            path
+            defaultImage { url(width: 500) altText }
+            brand { name path }
+            prices {
+              price { value currencyCode }
+              basePrice { value currencyCode }
+              retailPrice { value currencyCode }
+              salePrice { value currencyCode }
+              priceRange {
+                min { value currencyCode }
+                max { value currencyCode }
+              }
+            }
+          }
+        }
+      }
+      bestSellingProducts(first: $first) {
+        edges {
+          node {
+            entityId
+            name
+            path
+            defaultImage { url(width: 500) altText }
+            brand { name path }
+            prices {
+              price { value currencyCode }
+              basePrice { value currencyCode }
+              retailPrice { value currencyCode }
+              salePrice { value currencyCode }
+              priceRange {
+                min { value currencyCode }
+                max { value currencyCode }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
 const SearchProductsQuery = graphql(`
   query BcProductsSearch($searchTerm: String!, $first: Int) {
     site {
@@ -142,8 +212,34 @@ export async function GET(req: NextRequest) {
   const categoryPath = searchParams.get('categoryPath');
   const entityIds = searchParams.get('entityIds');
   const search = searchParams.get('search');
+  const group = searchParams.get('group');
 
   try {
+    if (group && ['newest', 'featured', 'best-selling'].includes(group)) {
+      const first = Math.min(
+        Math.max(parseInt(searchParams.get('limit') ?? '12', 10) || 12, 1),
+        50,
+      );
+
+      const result = await client.fetch({
+        document: GetProductsByGroupQuery,
+        variables: { first },
+        fetchOptions: { next: { revalidate } },
+      });
+
+      const site = result.data.site;
+      const edges =
+        group === 'newest'
+          ? site.newestProducts.edges
+          : group === 'featured'
+            ? site.featuredProducts.edges
+            : site.bestSellingProducts.edges;
+
+      const products = (edges ?? []).map((e) => e.node);
+
+      return NextResponse.json({ products });
+    }
+
     if (search) {
       console.log('[/api/bc/products] search request', { searchTerm: search });
 
