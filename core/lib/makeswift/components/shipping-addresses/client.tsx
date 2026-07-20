@@ -11,12 +11,7 @@ interface AddressItem {
 
 interface SeededAddress {
   title?: string;
-  line1?: string;
-  line2?: string;
-  line3?: string;
-  line4?: string;
-  line5?: string;
-  extraLines?: string[];
+  body?: string;
   notes?: string;
 }
 
@@ -31,8 +26,9 @@ interface Props {
 
 function seededToAddress(s?: SeededAddress): AddressItem | null {
   if (!s) return null;
-  const lines = [s.line1, s.line2, s.line3, s.line4, s.line5, ...(s.extraLines ?? [])]
-    .map((l) => (l ?? '').trim())
+  const lines = (s.body ?? '')
+    .split('\n')
+    .map((l) => l.trim())
     .filter((l) => l.length > 0);
   if (!s.title && lines.length === 0 && !s.notes) return null;
   return { title: s.title, lines, notes: s.notes };
