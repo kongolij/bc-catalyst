@@ -10,20 +10,36 @@ import {
   type TextVariant,
 } from '~/lib/ges-theme/primitives';
 
+interface DateOverride {
+  startDate?: string;
+  endDate?: string;
+  scheduleType?: string;
+  scheduleNotes?: string;
+}
+
 interface Props {
   className?: string;
   title?: string;
   titleVariant?: TextVariant;
   description?: string;
-  useApiDates?: boolean;
-  date1?: DateRow;
-  date2?: DateRow;
-  date3?: DateRow;
-  date4?: DateRow;
+  date1Override?: DateOverride;
+  date2Override?: DateOverride;
+  date3Override?: DateOverride;
+  date4Override?: DateOverride;
 }
 
-function isNonEmpty(d?: DateRow) {
-  return !!(d && (d.startDate || d.scheduleType || d.scheduleNotes));
+function isBlank(s?: string) {
+  return !s || s.trim().length === 0;
+}
+
+function applyOverride(base: DateRow | undefined, override?: DateOverride): DateRow | null {
+  const startDate = !isBlank(override?.startDate) ? override!.startDate : base?.startDate;
+  const endDate = !isBlank(override?.endDate) ? override!.endDate : base?.endDate;
+  const scheduleType = !isBlank(override?.scheduleType) ? override!.scheduleType : base?.scheduleType;
+  const scheduleNotes = !isBlank(override?.scheduleNotes) ? override!.scheduleNotes : base?.scheduleNotes;
+
+  if (!startDate && !scheduleType && !scheduleNotes) return null;
+  return { startDate, endDate, scheduleType, scheduleNotes };
 }
 
 export function DatesDeadlinesClient({
@@ -31,16 +47,14 @@ export function DatesDeadlinesClient({
   title,
   titleVariant = 'h2',
   description,
-  useApiDates = true,
-  date1,
-  date2,
-  date3,
-  date4,
+  date1Override,
+  date2Override,
+  date3Override,
+  date4Override,
 }: Props) {
-  const [apiDates, setApiDates] = useState<DateRow[] | null>(null);
+  const [apiDates, setApiDates] = useState<DateRow[]>([]);
 
   useEffect(() => {
-    if (!useApiDates) return;
     let cancelled = false;
     fetch('/api/ges/quick-facts/dates')
       .then((r) => r.json())
@@ -53,10 +67,15 @@ export function DatesDeadlinesClient({
     return () => {
       cancelled = true;
     };
-  }, [useApiDates]);
+  }, []);
 
-  const seededDates = [date1, date2, date3, date4].filter(isNonEmpty) as DateRow[];
-  const rows = useApiDates ? apiDates ?? [] : seededDates;
+  const overrides = [date1Override, date2Override, date3Override, date4Override];
+  const merged = overrides
+    .map((override, i) => applyOverride(apiDates[i], override))
+    .filter((r): r is DateRow => r !== null);
+
+  const extras = apiDates.slice(overrides.length);
+  const rows = [...merged, ...extras];
 
   return (
     <GesSection className={className}>

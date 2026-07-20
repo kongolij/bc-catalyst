@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
-import { CopyHelper } from '~/lib/ges-theme/copy-helper';
 import {
   AddressGrid,
   type AddressCard,
@@ -11,34 +10,45 @@ import {
   type TextVariant,
 } from '~/lib/ges-theme/primitives';
 
+interface OverrideAddress {
+  title?: string;
+  body?: string;
+  notes?: string;
+}
+
 interface Props {
   className?: string;
   title?: string;
   titleVariant?: TextVariant;
-  useApiAddresses?: boolean;
-  manualContent?: ReactNode;
+  address1Override?: OverrideAddress;
+  address2Override?: OverrideAddress;
 }
 
-function addressesToText(addresses: AddressCard[]): string {
-  return addresses
-    .map((a) => {
-      const parts: string[] = [];
-      if (a.title) parts.push(a.title);
-      if (a.lines) parts.push(...a.lines);
-      if (a.notes) parts.push('', a.notes);
-      return parts.join('\n');
-    })
-    .join('\n\n');
+function isBlank(s?: string) {
+  return !s || s.trim().length === 0;
+}
+
+function applyOverride(base: AddressCard | undefined, override?: OverrideAddress): AddressCard | null {
+  const overrideLines = !isBlank(override?.body)
+    ? override!.body!.split('\n').map((l) => l.trim()).filter((l) => l.length > 0)
+    : null;
+
+  const title = !isBlank(override?.title) ? override!.title : base?.title;
+  const lines = overrideLines ?? base?.lines ?? [];
+  const notes = !isBlank(override?.notes) ? override!.notes : base?.notes;
+
+  if (!title && lines.length === 0 && !notes) return null;
+  return { title, lines, notes };
 }
 
 export function ShippingAddressesClient({
   className,
   title,
   titleVariant = 'h2',
-  useApiAddresses = true,
-  manualContent,
+  address1Override,
+  address2Override,
 }: Props) {
-  const [apiAddresses, setApiAddresses] = useState<AddressCard[] | null>(null);
+  const [apiAddresses, setApiAddresses] = useState<AddressCard[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,20 +65,18 @@ export function ShippingAddressesClient({
     };
   }, []);
 
+  const overrides = [address1Override, address2Override];
+  const merged = overrides
+    .map((override, i) => applyOverride(apiAddresses[i], override))
+    .filter((a): a is AddressCard => a !== null);
+
+  const extras = apiAddresses.slice(overrides.length);
+  const addresses = [...merged, ...extras];
+
   return (
     <GesSection className={className}>
       {title && <ThemedText text={title} variant={titleVariant} />}
-      {useApiAddresses ? (
-        <AddressGrid addresses={apiAddresses ?? []} />
-      ) : (
-        <>
-          <CopyHelper
-            label="Copy API defaults to clipboard"
-            getText={() => addressesToText(apiAddresses ?? [])}
-          />
-          <div>{manualContent}</div>
-        </>
-      )}
+      <AddressGrid addresses={addresses} />
     </GesSection>
   );
 }
