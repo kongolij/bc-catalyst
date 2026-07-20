@@ -1,4 +1,4 @@
-import { Checkbox, Select, Slot, Style, TextInput } from '@makeswift/runtime/controls';
+import { Select, Slot, Style, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -21,11 +21,7 @@ runtime.registerComponent(ShippingAddressesClient, {
       ],
       defaultValue: 'h2',
     }),
-    useApi: Checkbox({
-      label: 'Load addresses from API (turn off to author addresses on the canvas)',
-      defaultValue: true,
-    }),
-    customContent: Slot({
+    content: Slot({
       unstable_placeholder: { builderOnly: true },
     }),
   },
