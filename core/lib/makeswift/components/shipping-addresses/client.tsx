@@ -9,18 +9,61 @@ interface AddressItem {
   notes?: string;
 }
 
+interface SeededAddress {
+  title?: string;
+  line1?: string;
+  line2?: string;
+  line3?: string;
+  line4?: string;
+  line5?: string;
+  extraLines?: string[];
+  notes?: string;
+}
+
 interface Props {
   className?: string;
   header?: ReactNode;
   useApiAddresses?: boolean;
-  manualContent?: ReactNode;
+  address1?: SeededAddress;
+  address2?: SeededAddress;
+  extraContent?: ReactNode;
+}
+
+function seededToAddress(s?: SeededAddress): AddressItem | null {
+  if (!s) return null;
+  const lines = [s.line1, s.line2, s.line3, s.line4, s.line5, ...(s.extraLines ?? [])]
+    .map((l) => (l ?? '').trim())
+    .filter((l) => l.length > 0);
+  if (!s.title && lines.length === 0 && !s.notes) return null;
+  return { title: s.title, lines, notes: s.notes };
+}
+
+function AddressGrid({ addresses }: { addresses: AddressItem[] }) {
+  if (addresses.length === 0) return null;
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {addresses.map((addr, i) => (
+        <div className="rounded border border-gray-200 p-4" key={addr.id ?? i}>
+          {addr.title && <h3 className="mb-2 font-semibold">{addr.title}</h3>}
+          <ul className="space-y-1 text-sm">
+            {(addr.lines ?? []).map((line, li) => (
+              <li key={li}>{line}</li>
+            ))}
+          </ul>
+          {addr.notes && <p className="mt-3 text-xs text-gray-600">{addr.notes}</p>}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function ShippingAddressesClient({
   className,
   header,
   useApiAddresses = true,
-  manualContent,
+  address1,
+  address2,
+  extraContent,
 }: Props) {
   const [apiAddresses, setApiAddresses] = useState<AddressItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,31 +88,19 @@ export function ShippingAddressesClient({
     };
   }, [useApiAddresses]);
 
+  const seeded = [seededToAddress(address1), seededToAddress(address2)].filter(
+    (a): a is AddressItem => a !== null,
+  );
+  const addresses = useApiAddresses ? apiAddresses ?? [] : seeded;
+
   return (
     <section className={className}>
       <div className="mb-3">{header}</div>
-      {useApiAddresses ? (
-        <>
-          {loading && <p className="text-sm text-gray-500">Loading addresses…</p>}
-          <div className="grid gap-6 md:grid-cols-2">
-            {(apiAddresses ?? []).map((addr, i) => (
-              <div className="rounded border border-gray-200 p-4" key={addr.id ?? i}>
-                {addr.title && <h3 className="mb-2 font-semibold">{addr.title}</h3>}
-                <ul className="space-y-1 text-sm">
-                  {(addr.lines ?? []).map((line, li) => (
-                    <li key={li}>{line}</li>
-                  ))}
-                </ul>
-                {addr.notes && (
-                  <p className="mt-3 text-xs text-gray-600">{addr.notes}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div>{manualContent}</div>
+      {loading && useApiAddresses && (
+        <p className="text-sm text-gray-500">Loading addresses…</p>
       )}
+      <AddressGrid addresses={addresses} />
+      <div className="mt-4">{extraContent}</div>
     </section>
   );
 }
