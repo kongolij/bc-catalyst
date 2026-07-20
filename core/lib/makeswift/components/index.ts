@@ -56,6 +56,11 @@ import './move-out/register';
 import './quick-facts/register';
 import './show-microsite/register';
 
+// GES Quick Facts POC — composable, in-place-editable replacements
+import './dates-deadlines/register';
+import './shipping-addresses/register';
+import './logistics-block/register';
+
 // Site chrome (hidden — used in layout)
 import './site-footer/register';
 import './site-header/register';
