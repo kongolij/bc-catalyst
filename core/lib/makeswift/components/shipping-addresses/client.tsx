@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import {
   AddressGrid,
@@ -10,47 +10,25 @@ import {
   type TextVariant,
 } from '~/lib/ges-theme/primitives';
 
-interface OverrideAddress {
-  title?: string;
-  body?: string;
-  notes?: string;
-}
-
 interface Props {
   className?: string;
   title?: string;
   titleVariant?: TextVariant;
-  address1Override?: OverrideAddress;
-  address2Override?: OverrideAddress;
-}
-
-function isBlank(s?: string) {
-  return !s || s.trim().length === 0;
-}
-
-function applyOverride(base: AddressCard | undefined, override?: OverrideAddress): AddressCard | null {
-  const overrideLines = !isBlank(override?.body)
-    ? override!.body!.split('\n').map((l) => l.trim()).filter((l) => l.length > 0)
-    : null;
-
-  const title = !isBlank(override?.title) ? override!.title : base?.title;
-  const lines = overrideLines ?? base?.lines ?? [];
-  const notes = !isBlank(override?.notes) ? override!.notes : base?.notes;
-
-  if (!title && lines.length === 0 && !notes) return null;
-  return { title, lines, notes };
+  useApi?: boolean;
+  customContent?: ReactNode;
 }
 
 export function ShippingAddressesClient({
   className,
   title,
   titleVariant = 'h2',
-  address1Override,
-  address2Override,
+  useApi = true,
+  customContent,
 }: Props) {
   const [apiAddresses, setApiAddresses] = useState<AddressCard[]>([]);
 
   useEffect(() => {
+    if (!useApi) return;
     let cancelled = false;
     fetch('/api/ges/quick-facts/shipping')
       .then((r) => r.json())
@@ -63,20 +41,12 @@ export function ShippingAddressesClient({
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const overrides = [address1Override, address2Override];
-  const merged = overrides
-    .map((override, i) => applyOverride(apiAddresses[i], override))
-    .filter((a): a is AddressCard => a !== null);
-
-  const extras = apiAddresses.slice(overrides.length);
-  const addresses = [...merged, ...extras];
+  }, [useApi]);
 
   return (
     <GesSection className={className}>
       {title && <ThemedText text={title} variant={titleVariant} />}
-      <AddressGrid addresses={addresses} />
+      {useApi ? <AddressGrid addresses={apiAddresses} /> : <div>{customContent}</div>}
     </GesSection>
   );
 }

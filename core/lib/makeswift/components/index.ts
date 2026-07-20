@@ -57,6 +57,7 @@ import './quick-facts/register';
 import './show-microsite/register';
 
 // GES Quick Facts POC — composable, in-place-editable replacements
+import './address-card/register';
 import './dates-deadlines/register';
 import './shipping-addresses/register';
 import './logistics-block/register';

@@ -1,21 +1,8 @@
-import { Group, Select, Style, TextArea, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Select, Slot, Style, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
 import { ShippingAddressesClient } from './client';
-
-const overrideRow = (label: string) =>
-  Group({
-    label,
-    preferredLayout: 'makeswift::controls::group::layout::popover',
-    props: {
-      title: TextInput({ label: 'Title override (leave empty to use API value)' }),
-      body: TextArea({
-        label: 'Address override — one line per row (leave empty to use API value)',
-      }),
-      notes: TextArea({ label: 'Notes override (leave empty to use API value)' }),
-    },
-  });
 
 runtime.registerComponent(ShippingAddressesClient, {
   type: 'ges-shipping-addresses',
@@ -34,7 +21,12 @@ runtime.registerComponent(ShippingAddressesClient, {
       ],
       defaultValue: 'h2',
     }),
-    address1Override: overrideRow('Address 1 override'),
-    address2Override: overrideRow('Address 2 override'),
+    useApi: Checkbox({
+      label: 'Load addresses from API (turn off to author addresses on the canvas)',
+      defaultValue: true,
+    }),
+    customContent: Slot({
+      unstable_placeholder: { builderOnly: true },
+    }),
   },
 });
