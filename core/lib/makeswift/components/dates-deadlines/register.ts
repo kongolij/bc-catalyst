@@ -1,20 +1,8 @@
-import { Group, Select, Style, TextArea, TextInput } from '@makeswift/runtime/controls';
+import { Select, Slot, Style, TextArea, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
 import { DatesDeadlinesClient } from './client';
-
-const overrideRow = (label: string) =>
-  Group({
-    label,
-    preferredLayout: 'makeswift::controls::group::layout::popover',
-    props: {
-      startDate: TextInput({ label: 'Start override (YYYY-MM-DD)' }),
-      endDate: TextInput({ label: 'End override (YYYY-MM-DD)' }),
-      scheduleType: TextInput({ label: 'Type override' }),
-      scheduleNotes: TextInput({ label: 'Notes override' }),
-    },
-  });
 
 runtime.registerComponent(DatesDeadlinesClient, {
   type: 'ges-dates-deadlines',
@@ -37,9 +25,16 @@ runtime.registerComponent(DatesDeadlinesClient, {
       defaultValue: 'h2',
     }),
     description: TextArea({ label: 'Description (leave empty to hide)' }),
-    date1Override: overrideRow('Row 1 override'),
-    date2Override: overrideRow('Row 2 override'),
-    date3Override: overrideRow('Row 3 override'),
-    date4Override: overrideRow('Row 4 override'),
+    mode: Select({
+      label: 'Content source',
+      options: [
+        { label: 'Load from API', value: 'api' },
+        { label: 'Author on canvas', value: 'canvas' },
+      ],
+      defaultValue: 'api',
+    }),
+    content: Slot({
+      unstable_placeholder: { builderOnly: true },
+    }),
   },
 });

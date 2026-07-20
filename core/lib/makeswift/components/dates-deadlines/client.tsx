@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import {
   DateTable,
@@ -10,36 +10,13 @@ import {
   type TextVariant,
 } from '~/lib/ges-theme/primitives';
 
-interface DateOverride {
-  startDate?: string;
-  endDate?: string;
-  scheduleType?: string;
-  scheduleNotes?: string;
-}
-
 interface Props {
   className?: string;
   title?: string;
   titleVariant?: TextVariant;
   description?: string;
-  date1Override?: DateOverride;
-  date2Override?: DateOverride;
-  date3Override?: DateOverride;
-  date4Override?: DateOverride;
-}
-
-function isBlank(s?: string) {
-  return !s || s.trim().length === 0;
-}
-
-function applyOverride(base: DateRow | undefined, override?: DateOverride): DateRow | null {
-  const startDate = !isBlank(override?.startDate) ? override!.startDate : base?.startDate;
-  const endDate = !isBlank(override?.endDate) ? override!.endDate : base?.endDate;
-  const scheduleType = !isBlank(override?.scheduleType) ? override!.scheduleType : base?.scheduleType;
-  const scheduleNotes = !isBlank(override?.scheduleNotes) ? override!.scheduleNotes : base?.scheduleNotes;
-
-  if (!startDate && !scheduleType && !scheduleNotes) return null;
-  return { startDate, endDate, scheduleType, scheduleNotes };
+  mode?: 'api' | 'canvas';
+  content?: ReactNode;
 }
 
 export function DatesDeadlinesClient({
@@ -47,14 +24,13 @@ export function DatesDeadlinesClient({
   title,
   titleVariant = 'h2',
   description,
-  date1Override,
-  date2Override,
-  date3Override,
-  date4Override,
+  mode = 'api',
+  content,
 }: Props) {
   const [apiDates, setApiDates] = useState<DateRow[]>([]);
 
   useEffect(() => {
+    if (mode !== 'api') return;
     let cancelled = false;
     fetch('/api/ges/quick-facts/dates')
       .then((r) => r.json())
@@ -67,21 +43,13 @@ export function DatesDeadlinesClient({
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const overrides = [date1Override, date2Override, date3Override, date4Override];
-  const merged = overrides
-    .map((override, i) => applyOverride(apiDates[i], override))
-    .filter((r): r is DateRow => r !== null);
-
-  const extras = apiDates.slice(overrides.length);
-  const rows = [...merged, ...extras];
+  }, [mode]);
 
   return (
     <GesSection className={className}>
       {title && <ThemedText text={title} variant={titleVariant} />}
       {description && <ThemedText text={description} variant="body" />}
-      <DateTable rows={rows} />
+      {mode === 'canvas' ? <div>{content}</div> : <DateTable rows={apiDates} />}
     </GesSection>
   );
 }
