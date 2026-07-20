@@ -26,7 +26,6 @@ export function ShippingAddressesClient({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!useApiAddresses) return;
     let cancelled = false;
     setLoading(true);
     fetch('/api/ges/quick-facts/shipping')
@@ -43,9 +42,14 @@ export function ShippingAddressesClient({
     return () => {
       cancelled = true;
     };
-  }, [useApiAddresses]);
+  }, []);
 
-  const addresses = useApiAddresses ? apiAddresses ?? [] : manualAddresses;
+  const hasManual = manualAddresses && manualAddresses.length > 0;
+  const addresses = useApiAddresses
+    ? apiAddresses ?? []
+    : hasManual
+      ? manualAddresses
+      : apiAddresses ?? [];
 
   return (
     <section className={className}>

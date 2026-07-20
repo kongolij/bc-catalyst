@@ -19,11 +19,11 @@ runtime.registerComponent(ShippingAddressesClient, {
     className: Style(),
     header: inlineSlot(),
     useApiAddresses: Checkbox({
-      label: 'Load addresses from API',
+      label: 'Load addresses from API (turn off to use manual list; if empty, API data is still shown)',
       defaultValue: true,
     }),
     manualAddresses: List({
-      label: 'Manual addresses (when API disabled)',
+      label: 'Manual addresses (overrides API when populated)',
       type: Group({
         label: 'Address',
         props: {

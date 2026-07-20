@@ -20,11 +20,11 @@ runtime.registerComponent(DatesDeadlinesClient, {
     header: inlineSlot(),
     description: inlineSlot(),
     useApiDates: Checkbox({
-      label: 'Load dates from API',
+      label: 'Load dates from API (turn off to use manual list; if empty, API data is still shown)',
       defaultValue: true,
     }),
     manualDates: List({
-      label: 'Manual dates (when API disabled)',
+      label: 'Manual dates (overrides API when populated)',
       type: Group({
         label: 'Date',
         props: {

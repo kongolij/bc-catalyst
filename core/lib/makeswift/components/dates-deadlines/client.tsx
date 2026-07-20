@@ -36,7 +36,6 @@ export function DatesDeadlinesClient({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!useApiDates) return;
     let cancelled = false;
     setLoading(true);
     fetch('/api/ges/quick-facts/dates')
@@ -53,9 +52,14 @@ export function DatesDeadlinesClient({
     return () => {
       cancelled = true;
     };
-  }, [useApiDates]);
+  }, []);
 
-  const dates = useApiDates ? apiDates ?? [] : manualDates;
+  const hasManual = manualDates && manualDates.length > 0;
+  const dates = useApiDates
+    ? apiDates ?? []
+    : hasManual
+      ? manualDates
+      : apiDates ?? [];
 
   return (
     <section className={className}>
