@@ -70,13 +70,24 @@ export default async function Cart({ params }: Props) {
   const format = await getFormatter();
   const cartId = await getCartId();
 
+  const cartSlotSnapshot = await makeswiftClient.getComponentSnapshot(CART_SLOT_SNAPSHOT_ID, {
+    siteVersion: await getSiteVersion(),
+  });
+
+  const cartSlot = (
+    <MakeswiftComponent label="Cart Slot" snapshot={cartSlotSnapshot} type={CART_SLOT_TYPE} />
+  );
+
   if (!cartId) {
     return (
-      <CartEmptyState
-        cta={{ label: t('Empty.cta'), href: '/shop-all' }}
-        subtitle={t('Empty.subtitle')}
-        title={t('Empty.title')}
-      />
+      <>
+        <CartEmptyState
+          cta={{ label: t('Empty.cta'), href: '/shop-all' }}
+          subtitle={t('Empty.subtitle')}
+          title={t('Empty.title')}
+        />
+        {cartSlot}
+      </>
     );
   }
 
@@ -89,11 +100,14 @@ export default async function Cart({ params }: Props) {
 
   if (!cart) {
     return (
-      <CartEmptyState
-        cta={{ label: t('Empty.cta'), href: '/shop-all' }}
-        subtitle={t('Empty.subtitle')}
-        title={t('Empty.title')}
-      />
+      <>
+        <CartEmptyState
+          cta={{ label: t('Empty.cta'), href: '/shop-all' }}
+          subtitle={t('Empty.subtitle')}
+          title={t('Empty.title')}
+        />
+        {cartSlot}
+      </>
     );
   }
 
@@ -170,16 +184,6 @@ export default async function Cart({ params }: Props) {
 
   const showShippingForm =
     shippingConsignment?.address && !shippingConsignment.selectedShippingOption;
-
-  const cartSlotSnapshot = await makeswiftClient
-    .getComponentSnapshot(CART_SLOT_SNAPSHOT_ID, {
-      siteVersion: await getSiteVersion(),
-    })
-    .catch((err: unknown) => {
-      console.warn('[cart-slot] failed to fetch snapshot', err);
-
-      return null;
-    });
 
   return (
     <>
@@ -308,13 +312,7 @@ export default async function Cart({ params }: Props) {
           title={t('title')}
         />
       </CartAnalyticsProvider>
-      {cartSlotSnapshot ? (
-        <MakeswiftComponent
-          label="Cart Slot"
-          snapshot={cartSlotSnapshot}
-          type={CART_SLOT_TYPE}
-        />
-      ) : null}
+      {cartSlot}
       <CartViewed
         currencyCode={cart.currencyCode}
         lineItems={lineItems}
