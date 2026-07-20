@@ -1,4 +1,4 @@
-import { Checkbox, Group, List, Slot, Style, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Slot, Style } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -20,23 +20,9 @@ runtime.registerComponent(DatesDeadlinesClient, {
     header: inlineSlot(),
     description: inlineSlot(),
     useApiDates: Checkbox({
-      label: 'Load dates from API (turn off to use manual list; if empty, API data is still shown)',
+      label: 'Load dates from API (turn off to edit content in-place below)',
       defaultValue: true,
     }),
-    manualDates: List({
-      label: 'Manual dates (overrides API when populated)',
-      type: Group({
-        label: 'Date',
-        props: {
-          startDate: TextInput({ label: 'Start (YYYY-MM-DD)', defaultValue: '' }),
-          endDate: TextInput({ label: 'End (YYYY-MM-DD)', defaultValue: '' }),
-          scheduleType: TextInput({ label: 'Type', defaultValue: '' }),
-          scheduleNotes: TextInput({ label: 'Notes', defaultValue: '' }),
-        },
-      }),
-      getItemLabel(item) {
-        return item?.scheduleType || 'Date';
-      },
-    }),
+    manualContent: inlineSlot(),
   },
 });

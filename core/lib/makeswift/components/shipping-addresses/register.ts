@@ -1,4 +1,4 @@
-import { Checkbox, Group, List, Slot, Style, TextArea, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Slot, Style } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -19,25 +19,9 @@ runtime.registerComponent(ShippingAddressesClient, {
     className: Style(),
     header: inlineSlot(),
     useApiAddresses: Checkbox({
-      label: 'Load addresses from API (turn off to use manual list; if empty, API data is still shown)',
+      label: 'Load addresses from API (turn off to edit content in-place below)',
       defaultValue: true,
     }),
-    manualAddresses: List({
-      label: 'Manual addresses (overrides API when populated)',
-      type: Group({
-        label: 'Address',
-        props: {
-          title: TextInput({ label: 'Title', defaultValue: 'Shipping Address' }),
-          lines: List({
-            label: 'Address lines',
-            type: TextInput({ label: 'Line', defaultValue: '' }),
-          }),
-          notes: TextArea({ label: 'Notes', defaultValue: '' }),
-        },
-      }),
-      getItemLabel(item) {
-        return item?.title || 'Address';
-      },
-    }),
+    manualContent: inlineSlot(),
   },
 });
