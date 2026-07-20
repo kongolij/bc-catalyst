@@ -1,15 +1,8 @@
-import { Checkbox, Group, Slot, Style, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Group, Select, Style, TextArea, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
 import { DatesDeadlinesClient } from './client';
-
-const inlineSlot = () =>
-  Slot({
-    unstable_placeholder: {
-      builderOnly: true,
-    },
-  });
 
 const dateRow = (defaults: {
   startDate: string;
@@ -34,8 +27,25 @@ runtime.registerComponent(DatesDeadlinesClient, {
   icon: 'carousel',
   props: {
     className: Style(),
-    header: inlineSlot(),
-    description: inlineSlot(),
+    title: TextInput({
+      label: 'Section title',
+      defaultValue: 'Important Dates and Deadlines',
+    }),
+    titleVariant: Select({
+      label: 'Title style',
+      options: [
+        { label: 'Section Heading (H2)', value: 'h2' },
+        { label: 'Page Heading (H1)', value: 'h1' },
+        { label: 'Sub-heading (H3)', value: 'h3' },
+        { label: 'Eyebrow', value: 'eyebrow' },
+      ],
+      defaultValue: 'h2',
+    }),
+    description: TextArea({
+      label: 'Description',
+      defaultValue:
+        'All inbound carriers must check into the warehouse by 2:00 PM to be guaranteed same day unloading.',
+    }),
     useApiDates: Checkbox({
       label: 'Load dates from live API (turn off to edit the seeded values below)',
       defaultValue: true,
@@ -64,6 +74,5 @@ runtime.registerComponent(DatesDeadlinesClient, {
       scheduleType: 'Freight Deadline',
       scheduleNotes: 'Last day for discounted advance warehouse shipments',
     }),
-    extraContent: inlineSlot(),
   },
 });

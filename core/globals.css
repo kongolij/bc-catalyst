@@ -30,3 +30,164 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+
+/* ------------------------------------------------------------------ */
+/* GES design tokens + primitives (Quick Facts POC)                    */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --ges-navy:       #0e2340;
+  --ges-lime:       #C9E252;
+  --ges-teal:       #2fb1a5;
+  --ges-text:       #1a1a1a;
+  --ges-muted:      #6b7280;
+  --ges-border:     #e5e7eb;
+
+  --ges-font-body:  var(--font-body, "Inter", system-ui, sans-serif);
+  --ges-font-head:  var(--font-body, "Inter", system-ui, sans-serif);
+
+  --ges-h1:         1.75rem;
+  --ges-h2:         0.95rem;
+  --ges-h3:         1rem;
+  --ges-body:       0.9rem;
+  --ges-small:      0.78rem;
+
+  --ges-radius-pill: 999px;
+}
+
+/* Example brand/region override (extend per site later)              */
+[data-brand="alt"] {
+  --ges-navy: #003366;
+  --ges-lime: #f4d03f;
+  --ges-teal: #4dc0a1;
+}
+
+.ges-section {
+  color: var(--ges-text);
+  font-family: var(--ges-font-body);
+}
+
+.ges-h1 {
+  color: var(--ges-navy);
+  font: 700 var(--ges-h1)/1.2 var(--ges-font-head);
+  margin: 0 0 0.25rem;
+}
+.ges-h2 {
+  color: var(--ges-navy);
+  font: 700 var(--ges-h2)/1.2 var(--ges-font-head);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--ges-teal);
+  display: inline-block;
+  padding: 0 0 4px;
+  margin: 0 0 12px;
+}
+.ges-h3 {
+  color: var(--ges-navy);
+  font: 700 var(--ges-h3)/1.2 var(--ges-font-head);
+  margin: 0 0 0.5rem;
+}
+.ges-eyebrow {
+  color: var(--ges-teal);
+  font: 700 var(--ges-small)/1.2 var(--ges-font-head);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 0.25rem;
+}
+.ges-body {
+  color: var(--ges-text);
+  font: 400 var(--ges-body)/1.5 var(--ges-font-body);
+  margin: 0 0 0.75rem;
+}
+.ges-muted {
+  color: var(--ges-muted);
+  font: 400 var(--ges-small)/1.4 var(--ges-font-body);
+}
+
+.ges-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: var(--ges-radius-pill);
+  font: 600 var(--ges-body)/1 var(--ges-font-body);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+}
+.ges-btn--primary {
+  background: var(--ges-lime);
+  color: var(--ges-navy);
+}
+.ges-btn--primary:hover { filter: brightness(0.95); }
+.ges-btn--ghost {
+  background: transparent;
+  color: var(--ges-navy);
+  border-color: var(--ges-navy);
+}
+
+.ges-address-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .ges-address-grid { grid-template-columns: 1fr 1fr; }
+}
+.ges-address {
+  padding: 0;
+}
+.ges-address-title {
+  color: var(--ges-navy);
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  font-size: var(--ges-body);
+}
+.ges-address-lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--ges-body);
+  line-height: 1.5;
+  color: var(--ges-text);
+}
+.ges-address-notes {
+  margin: 0.5rem 0 0;
+  font-size: var(--ges-small);
+  color: var(--ges-muted);
+}
+
+.ges-dates-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ges-body);
+}
+.ges-dates-table th {
+  background: #f3f4f6;
+  color: var(--ges-navy);
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid var(--ges-border);
+  font-weight: 700;
+}
+.ges-dates-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--ges-border);
+  color: var(--ges-text);
+}
+.ges-dates-table tbody tr:nth-child(even) { background: #fafafa; }
+
+.ges-copy-helper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed var(--ges-teal);
+  border-radius: 6px;
+  color: var(--ges-teal);
+  font: 600 var(--ges-small)/1 var(--ges-font-body);
+  cursor: pointer;
+}
+.ges-copy-helper:hover { background: rgba(47,177,165,0.08); }
