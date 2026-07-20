@@ -21,6 +21,14 @@ runtime.registerComponent(ShippingAddressesClient, {
       ],
       defaultValue: 'h2',
     }),
+    mode: Select({
+      label: 'Content source',
+      options: [
+        { label: 'Load from API', value: 'api' },
+        { label: 'Author on canvas', value: 'canvas' },
+      ],
+      defaultValue: 'api',
+    }),
     content: Slot({
       unstable_placeholder: { builderOnly: true },
     }),
