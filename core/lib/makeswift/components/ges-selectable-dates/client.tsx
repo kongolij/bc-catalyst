@@ -13,11 +13,24 @@ interface Props {
   calendarFileName?: string;
 }
 
-function formatDate(iso?: string) {
+function formatDateTime(iso?: string): string {
   if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
+  const hasTime = /T\d{2}:\d{2}/.test(iso);
+  const d = new Date(hasTime ? iso : iso + 'T00:00:00');
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  const datePart = d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+  if (!hasTime) return datePart;
+  const timePart = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+  return `${datePart}, ${timePart}`;
 }
 
 function isNonEmpty(r?: DateRow): r is DateRow {
@@ -120,12 +133,9 @@ export function GesSelectableDatesClient({
                 onChange={() => toggleRow(i)}
               />
               <span>
-                <strong>
-                  {formatDate(r.startDate)}
-                  {r.endDate && r.endDate !== r.startDate ? ` – ${formatDate(r.endDate)}` : ''}
-                </strong>
-                {r.scheduleType && <> : {r.scheduleType}</>}
-                {r.scheduleNotes && <> — {r.scheduleNotes}</>}
+                {formatDateTime(r.startDate)}
+                {r.endDate && r.endDate !== r.startDate ? ` - ${formatDateTime(r.endDate)}` : ''}
+                {r.scheduleType && ` : ${r.scheduleType}`}
               </span>
             </label>
           </li>
