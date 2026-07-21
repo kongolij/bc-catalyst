@@ -48,6 +48,8 @@ function categoryHref(path: string) {
 
 export function GesCatalogNavClient({ className, mode = 'auto-featured', items }: Props) {
   const [tree, setTree] = useState<L1[]>([]);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState<string>('');
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,13 +59,29 @@ export function GesCatalogNavClient({ className, mode = 'auto-featured', items }
     const url =
       mode === 'auto-featured' ? '/api/bc/nav-tree?filter=featured' : '/api/bc/nav-tree';
 
+    setStatus('loading');
     fetch(url)
-      .then((r) => r.json())
-      .then((data: { tree: L1[] }) => {
-        if (!cancelled) setTree(data.tree ?? []);
+      .then(async (r) => {
+        const data = await r.json();
+
+        if (cancelled) return;
+
+        if (!r.ok || data?.error) {
+          setStatus('error');
+          setErrorMsg(data?.error || `HTTP ${r.status}`);
+          setTree([]);
+
+          return;
+        }
+
+        setTree(data.tree ?? []);
+        setStatus('ready');
       })
-      .catch(() => {
-        if (!cancelled) setTree([]);
+      .catch((err) => {
+        if (cancelled) return;
+        setStatus('error');
+        setErrorMsg(String(err));
+        setTree([]);
       });
 
     return () => {

@@ -19,15 +19,6 @@ const TopLevelCategoriesQuery = graphql(`
           url: urlTemplate(lossy: true)
           altText
         }
-        children {
-          entityId
-          children {
-            entityId
-            children {
-              entityId
-            }
-          }
-        }
       }
       featuredProducts(first: $featuredFirst) {
         edges {
@@ -37,6 +28,13 @@ const TopLevelCategoriesQuery = graphql(`
               edges {
                 node {
                   entityId
+                  breadcrumbs(depth: 10) {
+                    edges {
+                      node {
+                        entityId
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -46,16 +44,6 @@ const TopLevelCategoriesQuery = graphql(`
     }
   }
 `);
-
-interface DescNode {
-  entityId: number;
-  children?: DescNode[];
-}
-
-function collectIds(node: DescNode, out: Set<number>) {
-  out.add(node.entityId);
-  (node.children ?? []).forEach((c) => collectIds(c, out));
-}
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -74,21 +62,18 @@ export async function GET(request: NextRequest) {
     let filtered = tree;
 
     if (filter === 'featured') {
-      const featuredCatIds = new Set<number>();
+      const featuredRootIds = new Set<number>();
 
-      result.data.site.featuredProducts.edges?.forEach((e) => {
-        e?.node.categories.edges?.forEach((c) => {
-          if (c?.node.entityId) featuredCatIds.add(c.node.entityId);
+      result.data.site.featuredProducts.edges?.forEach((pe) => {
+        pe?.node.categories.edges?.forEach((ce) => {
+          const crumbs = ce?.node.breadcrumbs.edges ?? [];
+          const rootId = crumbs[0]?.node.entityId;
+
+          if (rootId != null) featuredRootIds.add(rootId);
         });
       });
 
-      filtered = tree.filter((top) => {
-        const ids = new Set<number>();
-
-        collectIds(top as DescNode, ids);
-
-        return Array.from(ids).some((id) => featuredCatIds.has(id));
-      });
+      filtered = tree.filter((top) => featuredRootIds.has(top.entityId));
     }
 
     const categories = filtered.map((c) => ({

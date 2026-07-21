@@ -21,9 +21,6 @@ const NavTreeQuery = graphql(`
             entityId
             name
             path
-            children {
-              entityId
-            }
           }
         }
       }
@@ -35,6 +32,13 @@ const NavTreeQuery = graphql(`
               edges {
                 node {
                   entityId
+                  breadcrumbs(depth: 10) {
+                    edges {
+                      node {
+                        entityId
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -57,29 +61,6 @@ interface L1 extends L3 {
   children?: L2[];
 }
 
-function collectIds(node: L1 | L2 | L3, out: Set<number>) {
-  out.add(node.entityId);
-  const kids = (node as L1).children ?? [];
-
-  kids.forEach((c) => collectIds(c, out));
-}
-
-function filterTreeByCategoryIds(tree: L1[], allowedIds: Set<number>): L1[] {
-  return tree
-    .map((top) => {
-      const topIds = new Set<number>();
-
-      collectIds(top, topIds);
-
-      const hasFeatured = Array.from(topIds).some((id) => allowedIds.has(id));
-
-      if (!hasFeatured) return null;
-
-      return top;
-    })
-    .filter((n): n is L1 => n !== null);
-}
-
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const filter = url.searchParams.get('filter');
@@ -95,19 +76,24 @@ export async function GET(request: NextRequest) {
     const tree = (result.data.site.categoryTree ?? []) as L1[];
 
     if (filter === 'featured') {
-      const allowedIds = new Set<number>();
+      // Collect the ROOT (top-level) category entityId for every category any
+      // featured product is assigned to, via its breadcrumb ancestor chain.
+      const featuredRootIds = new Set<number>();
 
-      result.data.site.featuredProducts.edges?.forEach((e) => {
-        e?.node.categories.edges?.forEach((c) => {
-          if (c?.node.entityId) allowedIds.add(c.node.entityId);
+      result.data.site.featuredProducts.edges?.forEach((pe) => {
+        pe?.node.categories.edges?.forEach((ce) => {
+          const crumbs = ce?.node.breadcrumbs.edges ?? [];
+          const rootId = crumbs[0]?.node.entityId;
+
+          if (rootId != null) featuredRootIds.add(rootId);
         });
       });
 
-      const filtered = filterTreeByCategoryIds(tree, allowedIds);
+      const filtered = tree.filter((top) => featuredRootIds.has(top.entityId));
 
       console.log('[/api/bc/nav-tree] filter=featured', {
         featuredProductCount: result.data.site.featuredProducts.edges?.length ?? 0,
-        featuredCategoryIds: Array.from(allowedIds),
+        featuredRootIds: Array.from(featuredRootIds),
         topLevelBefore: tree.length,
         topLevelAfter: filtered.length,
       });
@@ -115,7 +101,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         tree: filtered,
         _debug: {
-          featuredCategoryIds: Array.from(allowedIds),
+          featuredProductCount: result.data.site.featuredProducts.edges?.length ?? 0,
+          featuredRootIds: Array.from(featuredRootIds),
           topLevelBefore: tree.length,
           topLevelAfter: filtered.length,
         },
