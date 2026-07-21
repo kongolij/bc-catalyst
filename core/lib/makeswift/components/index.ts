@@ -67,6 +67,9 @@ import './logistics-block/register';
 import './logistics-card/register';
 import './ges-category-card/register';
 import './ges-category-grid/register';
+import './ges-catalog-nav/register';
+import './ges-content-nav/register';
+import './ges-site-header/register';
 
 // Site chrome (hidden — used in layout)
 import './site-footer/register';
