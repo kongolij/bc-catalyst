@@ -10,6 +10,14 @@ runtime.registerComponent(GesCategoryGridClient, {
   icon: 'gallery',
   props: {
     className: Style(),
+    mode: Select({
+      label: 'Source',
+      options: [
+        { label: 'Auto-populate from API', value: 'api' },
+        { label: 'Manual (drop cards)', value: 'manual' },
+      ],
+      defaultValue: 'api',
+    }),
     columns: Select({
       label: 'Columns (desktop)',
       options: [
@@ -24,6 +32,10 @@ runtime.registerComponent(GesCategoryGridClient, {
       label: 'Gap (CSS)',
       defaultValue: '16px',
     }),
-    children: Slot(),
+    limit: TextInput({
+      label: 'Max cards (API mode, blank = all)',
+      defaultValue: '',
+    }),
+    children: Slot({ unstable_placeholder: { builderOnly: true } }),
   },
 });
