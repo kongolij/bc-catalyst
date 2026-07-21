@@ -686,3 +686,17 @@ a.ges-nav__leaf:hover {
   font: 500 0.875rem/1.3 var(--ges-font-body, sans-serif);
   color: #465569;
 }
+
+/* -------- GES Inline Banner -------- */
+.ges-inline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 24px;
+  text-align: center;
+  text-decoration: none;
+}
+.ges-inline-banner__text {
+  font: 500 0.9375rem/1.3 var(--ges-font-body, sans-serif);
+}
