@@ -21,6 +21,9 @@ const NavTreeQuery = graphql(`
             entityId
             name
             path
+            children {
+              entityId
+            }
           }
         }
       }
@@ -100,7 +103,23 @@ export async function GET(request: NextRequest) {
         });
       });
 
-      return NextResponse.json({ tree: filterTreeByCategoryIds(tree, allowedIds) });
+      const filtered = filterTreeByCategoryIds(tree, allowedIds);
+
+      console.log('[/api/bc/nav-tree] filter=featured', {
+        featuredProductCount: result.data.site.featuredProducts.edges?.length ?? 0,
+        featuredCategoryIds: Array.from(allowedIds),
+        topLevelBefore: tree.length,
+        topLevelAfter: filtered.length,
+      });
+
+      return NextResponse.json({
+        tree: filtered,
+        _debug: {
+          featuredCategoryIds: Array.from(allowedIds),
+          topLevelBefore: tree.length,
+          topLevelAfter: filtered.length,
+        },
+      });
     }
 
     return NextResponse.json({ tree });
