@@ -70,6 +70,7 @@ import './ges-category-grid/register';
 import './ges-catalog-nav/register';
 import './ges-content-nav/register';
 import './ges-site-header/register';
+import './ges-static-nav/register';
 
 // Site chrome (hidden — used in layout)
 import './site-footer/register';
