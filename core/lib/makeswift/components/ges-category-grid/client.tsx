@@ -12,24 +12,21 @@ interface TopLevelCategory {
   image: { url: string; altText: string } | null;
 }
 
+interface CuratedEntry {
+  categoryId?: string;
+  titleOverride?: string;
+  iconUrl?: string;
+  hrefOverride?: string;
+}
+
 interface Props {
   className?: string;
-  mode?: 'api' | 'manual';
+  mode?: 'api' | 'curated' | 'manual';
   columns?: '2' | '3' | '4' | '5';
   gap?: string;
   limit?: string;
-  hiddenIds?: string;
-  orderIds?: string;
+  entries?: CuratedEntry[];
   children?: ReactNode;
-}
-
-function parseIds(csv?: string): number[] {
-  if (!csv) return [];
-
-  return csv
-    .split(',')
-    .map((s) => Number(s.trim()))
-    .filter((n) => Number.isFinite(n) && n > 0);
 }
 
 export function GesCategoryGridClient({
@@ -38,8 +35,7 @@ export function GesCategoryGridClient({
   columns = '4',
   gap = '16px',
   limit,
-  hiddenIds,
-  orderIds,
+  entries,
   children,
 }: Props) {
   const [cats, setCats] = useState<TopLevelCategory[]>([]);
@@ -61,34 +57,40 @@ export function GesCategoryGridClient({
     };
   }, [mode]);
 
-  const hidden = new Set(parseIds(hiddenIds));
-  const order = parseIds(orderIds);
+  const gridProps = {
+    className: ['ges-cat-grid', className].filter(Boolean).join(' '),
+    'data-cols': columns,
+    style: { ['--ges-cat-gap' as string]: gap },
+  };
 
-  let visible = cats.filter((c) => !hidden.has(c.entityId));
+  if (mode === 'manual') return <div {...gridProps}>{children}</div>;
 
-  if (order.length > 0) {
-    const byId = new Map(visible.map((c) => [c.entityId, c]));
+  if (mode === 'curated') {
+    const rows = (entries ?? []).filter((e) => e.categoryId);
 
-    visible = order.map((id) => byId.get(id)).filter((c): c is TopLevelCategory => !!c);
+    return (
+      <div {...gridProps}>
+        {rows.map((e, i) => (
+          <GesCategoryCardClient
+            key={`${e.categoryId}-${i}`}
+            categoryId={e.categoryId}
+            titleOverride={e.titleOverride}
+            iconUrl={e.iconUrl}
+            hrefOverride={e.hrefOverride}
+          />
+        ))}
+      </div>
+    );
   }
 
   const max = Number(limit);
-
-  if (mode === 'api' && Number.isFinite(max) && max > 0) {
-    visible = visible.slice(0, max);
-  }
+  const visible = Number.isFinite(max) && max > 0 ? cats.slice(0, max) : cats;
 
   return (
-    <div
-      className={['ges-cat-grid', className].filter(Boolean).join(' ')}
-      data-cols={columns}
-      style={{ ['--ges-cat-gap' as string]: gap }}
-    >
-      {mode === 'api'
-        ? visible.map((c) => (
-            <GesCategoryCardClient key={c.entityId} categoryId={String(c.entityId)} />
-          ))
-        : children}
+    <div {...gridProps}>
+      {visible.map((c) => (
+        <GesCategoryCardClient key={c.entityId} categoryId={String(c.entityId)} />
+      ))}
     </div>
   );
 }
