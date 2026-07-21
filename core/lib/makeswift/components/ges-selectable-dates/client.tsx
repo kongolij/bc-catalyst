@@ -49,15 +49,24 @@ export function GesSelectableDatesClient({
   }, [source]);
 
   const rows = useMemo<DateRow[]>(() => {
-    const source_rows = source === 'api' ? apiRows : (manualRows ?? []).filter(isNonEmpty);
-    return source_rows;
+    return source === 'api' ? apiRows : (manualRows ?? []).filter(isNonEmpty);
   }, [source, apiRows, manualRows]);
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    setSelected(new Set(rows.map((_, i) => i)));
-  }, [rows]);
+    setSelected((prev) => {
+      const desired = new Set(rows.map((_, i) => i));
+      if (prev.size === desired.size) {
+        let same = true;
+        for (const v of desired) {
+          if (!prev.has(v)) { same = false; break; }
+        }
+        if (same) return prev;
+      }
+      return desired;
+    });
+  }, [rows.length]);
 
   const allSelected = rows.length > 0 && selected.size === rows.length;
 
