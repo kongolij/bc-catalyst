@@ -15,12 +15,16 @@ interface Props {
   searchParams: Promise<SearchParams>;
 }
 
+const CHROMELESS_PATHS = new Set(['/home-poc']);
+
 export async function generateStaticParams() {
   const pages = await client.getPages().toArray();
 
-  return pages.map((page) => ({
-    rest: page.path.replace(/^\//, '').split('/').filter(Boolean),
-  }));
+  return pages
+    .filter((page) => !CHROMELESS_PATHS.has(page.path))
+    .map((page) => ({
+      rest: page.path.replace(/^\//, '').split('/').filter(Boolean),
+    }));
 }
 
 export default async function CatchAllPage({ params, searchParams }: Props) {
