@@ -327,6 +327,22 @@
 .ges-ship-card__notes p { margin: 0.35rem 0; }
 .ges-ship-card__notes a { color: var(--ges-teal); text-decoration: underline; }
 
+.ges-cat-grid {
+  display: grid;
+  gap: var(--ges-cat-gap, 16px);
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .ges-cat-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1024px) {
+  .ges-cat-grid[data-cols="2"] { grid-template-columns: repeat(2, 1fr); }
+  .ges-cat-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr); }
+  .ges-cat-grid[data-cols="4"] { grid-template-columns: repeat(4, 1fr); }
+  .ges-cat-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr); }
+}
+
 .ges-cat-card__link {
   display: block;
   text-decoration: none;
