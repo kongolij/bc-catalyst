@@ -64,6 +64,7 @@ import './ges-selectable-dates/register';
 import './shipping-address-card/register';
 import './shipping-addresses/register';
 import './logistics-block/register';
+import './ges-category-card/register';
 
 // Site chrome (hidden — used in layout)
 import './site-footer/register';
