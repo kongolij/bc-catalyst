@@ -61,6 +61,23 @@ interface L1 extends L3 {
   children?: L2[];
 }
 
+// A category is "on a featured path" if it or any of its ancestors is where a
+// featured product is directly assigned. We collect every entityId along each
+// product's breadcrumb chain, so the whole path (root → leaf) is included.
+function pruneToFeaturedIds(tree: L1[], featuredPathIds: Set<number>): L1[] {
+  return tree
+    .filter((l1) => featuredPathIds.has(l1.entityId))
+    .map((l1) => ({
+      ...l1,
+      children: (l1.children ?? [])
+        .filter((l2) => featuredPathIds.has(l2.entityId))
+        .map((l2) => ({
+          ...l2,
+          children: (l2.children ?? []).filter((l3) => featuredPathIds.has(l3.entityId)),
+        })),
+    }));
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const filter = url.searchParams.get('filter');
@@ -76,35 +93,33 @@ export async function GET(request: NextRequest) {
     const tree = (result.data.site.categoryTree ?? []) as L1[];
 
     if (filter === 'featured') {
-      // Collect the ROOT (top-level) category entityId for every category any
-      // featured product is assigned to, via its breadcrumb ancestor chain.
-      const featuredRootIds = new Set<number>();
+      const featuredPathIds = new Set<number>();
 
       result.data.site.featuredProducts.edges?.forEach((pe) => {
         pe?.node.categories.edges?.forEach((ce) => {
-          const crumbs = ce?.node.breadcrumbs.edges ?? [];
-          const rootId = crumbs[0]?.node.entityId;
-
-          if (rootId != null) featuredRootIds.add(rootId);
+          if (ce?.node.entityId) featuredPathIds.add(ce.node.entityId);
+          ce?.node.breadcrumbs.edges?.forEach((be) => {
+            if (be?.node.entityId) featuredPathIds.add(be.node.entityId);
+          });
         });
       });
 
-      const filtered = tree.filter((top) => featuredRootIds.has(top.entityId));
+      const pruned = pruneToFeaturedIds(tree, featuredPathIds);
 
       console.log('[/api/bc/nav-tree] filter=featured', {
         featuredProductCount: result.data.site.featuredProducts.edges?.length ?? 0,
-        featuredRootIds: Array.from(featuredRootIds),
+        featuredPathIds: Array.from(featuredPathIds),
         topLevelBefore: tree.length,
-        topLevelAfter: filtered.length,
+        topLevelAfter: pruned.length,
       });
 
       return NextResponse.json({
-        tree: filtered,
+        tree: pruned,
         _debug: {
           featuredProductCount: result.data.site.featuredProducts.edges?.length ?? 0,
-          featuredRootIds: Array.from(featuredRootIds),
+          featuredPathIds: Array.from(featuredPathIds),
           topLevelBefore: tree.length,
-          topLevelAfter: filtered.length,
+          topLevelAfter: pruned.length,
         },
       });
     }

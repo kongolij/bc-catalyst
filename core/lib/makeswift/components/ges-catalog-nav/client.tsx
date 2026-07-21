@@ -51,6 +51,8 @@ export function GesCatalogNavClient({ className, mode = 'auto-featured', items }
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [hoveredL2Id, setHoveredL2Id] = useState<number | null>(null);
+  const [hoveredManualL2, setHoveredManualL2] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === 'manual') return;
@@ -92,14 +94,20 @@ export function GesCatalogNavClient({ className, mode = 'auto-featured', items }
   const renderAuto = () => (
     <ul className="ges-nav__top">
       {tree.map((item) => {
-        const hasKids = (item.children?.length ?? 0) > 0;
+        const l2s = item.children ?? [];
+        const hasKids = l2s.length > 0;
         const key = `api-${item.entityId}`;
+        const activeL2 = l2s.find((c) => c.entityId === hoveredL2Id) ?? l2s[0];
+        const l3s = activeL2?.children ?? [];
 
         return (
           <li
             key={item.entityId}
             className="ges-nav__top-item"
-            onMouseEnter={() => setOpenId(key)}
+            onMouseEnter={() => {
+              setOpenId(key);
+              setHoveredL2Id(l2s[0]?.entityId ?? null);
+            }}
           >
             <Link className="ges-nav__top-link" href={categoryHref(item.path)}>
               {item.name}
@@ -107,32 +115,50 @@ export function GesCatalogNavClient({ className, mode = 'auto-featured', items }
             </Link>
 
             {hasKids && openId === key && (
-              <div className="ges-nav__dropdown">
-                <div
-                  className="ges-nav__cols"
-                  style={{
-                    gridTemplateColumns: `repeat(${Math.min(item.children!.length, 4)}, 1fr)`,
-                  }}
-                >
-                  {item.children!.map((col) => (
-                    <div key={col.entityId} className="ges-nav__col">
-                      <Link className="ges-nav__col-title" href={categoryHref(col.path)}>
-                        {col.name}
-                      </Link>
-                      {(col.children?.length ?? 0) > 0 && (
-                        <ul className="ges-nav__col-links">
-                          {col.children!.map((leaf) => (
-                            <li key={leaf.entityId}>
-                              <Link className="ges-nav__leaf" href={categoryHref(leaf.path)}>
-                                {leaf.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
+              <div className="ges-nav__cascade">
+                <div className="ges-nav__pane ges-nav__pane--l2">
+                  <div className="ges-nav__pane-label">Categories</div>
+                  <ul className="ges-nav__pane-list">
+                    {l2s.map((l2) => {
+                      const active = l2.entityId === (activeL2?.entityId ?? -1);
+
+                      return (
+                        <li
+                          key={l2.entityId}
+                          className={[
+                            'ges-nav__pane-item',
+                            active ? 'ges-nav__pane-item--active' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          onMouseEnter={() => setHoveredL2Id(l2.entityId)}
+                        >
+                          <Link className="ges-nav__pane-link" href={categoryHref(l2.path)}>
+                            {l2.name}
+                            {(l2.children?.length ?? 0) > 0 && (
+                              <span className="ges-nav__pane-chev">›</span>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
+
+                {l3s.length > 0 && (
+                  <div className="ges-nav__pane ges-nav__pane--l3">
+                    <div className="ges-nav__pane-label">{activeL2?.name}</div>
+                    <ul className="ges-nav__pane-list">
+                      {l3s.map((l3) => (
+                        <li key={l3.entityId} className="ges-nav__pane-item">
+                          <Link className="ges-nav__pane-link" href={categoryHref(l3.path)}>
+                            {l3.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </li>
