@@ -10,7 +10,7 @@ runtime.registerComponent(LogisticsBlockClient, {
   icon: 'carousel',
   props: {
     className: Style(),
-    title: TextInput({ label: 'Section title', defaultValue: 'GES Logistics' }),
+    title: TextInput({ label: 'Section title', defaultValue: 'GES LOGISTICS' }),
     titleVariant: Select({
       label: 'Title style',
       options: [
@@ -20,6 +20,14 @@ runtime.registerComponent(LogisticsBlockClient, {
         { label: 'Eyebrow', value: 'eyebrow' },
       ],
       defaultValue: 'h2',
+    }),
+    mode: Select({
+      label: 'Content source',
+      options: [
+        { label: 'Load from API', value: 'api' },
+        { label: 'Author on canvas', value: 'canvas' },
+      ],
+      defaultValue: 'api',
     }),
     content: Slot({
       unstable_placeholder: { builderOnly: true },
