@@ -36,6 +36,14 @@ runtime.registerComponent(GesCategoryGridClient, {
       label: 'Max cards (API mode, blank = all)',
       defaultValue: '',
     }),
+    hiddenIds: TextInput({
+      label: 'Hide category IDs (comma-separated)',
+      defaultValue: '',
+    }),
+    orderIds: TextInput({
+      label: 'Order override (comma-separated IDs)',
+      defaultValue: '',
+    }),
     children: Slot({ unstable_placeholder: { builderOnly: true } }),
   },
 });

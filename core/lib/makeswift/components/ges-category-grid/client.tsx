@@ -18,7 +18,18 @@ interface Props {
   columns?: '2' | '3' | '4' | '5';
   gap?: string;
   limit?: string;
+  hiddenIds?: string;
+  orderIds?: string;
   children?: ReactNode;
+}
+
+function parseIds(csv?: string): number[] {
+  if (!csv) return [];
+
+  return csv
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n) && n > 0);
 }
 
 export function GesCategoryGridClient({
@@ -27,6 +38,8 @@ export function GesCategoryGridClient({
   columns = '4',
   gap = '16px',
   limit,
+  hiddenIds,
+  orderIds,
   children,
 }: Props) {
   const [cats, setCats] = useState<TopLevelCategory[]>([]);
@@ -48,9 +61,22 @@ export function GesCategoryGridClient({
     };
   }, [mode]);
 
+  const hidden = new Set(parseIds(hiddenIds));
+  const order = parseIds(orderIds);
+
+  let visible = cats.filter((c) => !hidden.has(c.entityId));
+
+  if (order.length > 0) {
+    const byId = new Map(visible.map((c) => [c.entityId, c]));
+
+    visible = order.map((id) => byId.get(id)).filter((c): c is TopLevelCategory => !!c);
+  }
+
   const max = Number(limit);
-  const visible =
-    mode === 'api' && Number.isFinite(max) && max > 0 ? cats.slice(0, max) : cats;
+
+  if (mode === 'api' && Number.isFinite(max) && max > 0) {
+    visible = visible.slice(0, max);
+  }
 
   return (
     <div
