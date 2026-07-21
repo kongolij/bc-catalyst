@@ -43,7 +43,7 @@ export function GesCategoryGridClient({
   useEffect(() => {
     if (mode !== 'api') return;
     let cancelled = false;
-    fetch('/api/bc/categories/top-level')
+    fetch('/api/bc/categories/top-level?filter=featured')
       .then((r) => r.json())
       .then((data: { categories: TopLevelCategory[] }) => {
         if (!cancelled) setCats(data.categories ?? []);
