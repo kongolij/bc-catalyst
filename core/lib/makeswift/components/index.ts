@@ -73,6 +73,11 @@ import './ges-site-header/register';
 import './ges-static-nav/register';
 import './ges-show-timeline/register';
 import './ges-inline-banner/register';
+import './ges-split-banner/register';
+import './ges-shipping-links/register';
+import './ges-important-dates/register';
+import './ges-resources-links/register';
+import './ges-need-help/register';
 
 // Site chrome (hidden — used in layout)
 import './site-footer/register';
