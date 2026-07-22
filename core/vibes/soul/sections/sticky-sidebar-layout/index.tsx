@@ -27,7 +27,18 @@ export function StickySidebarLayout({
   sidebar: React.ReactNode;
   children: React.ReactNode;
   containerSize?: 'md' | 'lg' | 'xl' | '2xl';
-  sidebarSize?: '1/4' | '1/3' | '1/2' | 'small' | 'medium' | 'large';
+  sidebarSize?:
+    | '1/5'
+    | '1/4'
+    | '3/8'
+    | '1/3'
+    | '2/5'
+    | '1/2'
+    | 'x-small'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'x-large';
   sidebarPosition?: 'before' | 'after';
   hideOverflow?: boolean;
 }) {
@@ -51,12 +62,17 @@ export function StickySidebarLayout({
             'min-w-0',
             sidebarPosition === 'after' ? 'order-2' : 'order-1',
             {
-              '1/3': '@4xl:w-1/3',
-              '1/2': '@4xl:w-1/2',
+              '1/5': '@4xl:w-1/5',
               '1/4': '@4xl:w-1/4',
+              '3/8': '@4xl:w-[37.5%]',
+              '1/3': '@4xl:w-1/3',
+              '2/5': '@4xl:w-2/5',
+              '1/2': '@4xl:w-1/2',
+              'x-small': '@4xl:w-40',
               small: '@4xl:w-48',
               medium: '@4xl:w-60',
               large: '@4xl:w-80',
+              'x-large': '@4xl:w-96',
             }[sidebarSize],
           )}
         >
@@ -67,12 +83,17 @@ export function StickySidebarLayout({
             'min-w-0',
             sidebarPosition === 'after' ? 'order-1' : 'order-2',
             {
-              '1/3': '@4xl:w-2/3',
-              '1/2': '@4xl:w-1/2',
+              '1/5': '@4xl:w-4/5',
               '1/4': '@4xl:w-3/4',
+              '3/8': '@4xl:w-[62.5%]',
+              '1/3': '@4xl:w-2/3',
+              '2/5': '@4xl:w-3/5',
+              '1/2': '@4xl:w-1/2',
+              'x-small': '@4xl:flex-1',
               small: '@4xl:flex-1',
               medium: '@4xl:flex-1',
               large: '@4xl:flex-1',
+              'x-large': '@4xl:flex-1',
             }[sidebarSize],
           )}
         >
