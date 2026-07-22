@@ -3,6 +3,14 @@ import { Select, Slot, Style } from '@makeswift/runtime/controls';
 import { StickySidebarLayout } from '@/vibes/soul/sections/sticky-sidebar-layout';
 import { runtime } from '~/lib/makeswift/runtime';
 
+const spacingOptions = [
+  { value: 'none', label: 'None' },
+  { value: 'sm', label: 'Small' },
+  { value: 'md', label: 'Medium' },
+  { value: 'lg', label: 'Large' },
+  { value: 'xl', label: 'X-Large' },
+] as const;
+
 runtime.registerComponent(StickySidebarLayout, {
   type: 'layouts-sticky-sidebar',
   label: 'Layouts / Sticky Sidebar',
@@ -14,10 +22,12 @@ runtime.registerComponent(StickySidebarLayout, {
     containerSize: Select({
       label: 'Container size',
       options: [
-        { value: 'md', label: 'Medium' },
-        { value: 'lg', label: 'Large' },
-        { value: 'xl', label: 'XL' },
-        { value: '2xl', label: '2XL' },
+        { value: 'md', label: 'Medium (768px)' },
+        { value: 'lg', label: 'Large (1024px)' },
+        { value: 'xl', label: 'XL (1280px)' },
+        { value: '2xl', label: '2XL (1536px)' },
+        { value: 'wide', label: 'Wide (1760px)' },
+        { value: 'full', label: 'Full width' },
       ],
       defaultValue: '2xl',
     }),
@@ -45,6 +55,26 @@ runtime.registerComponent(StickySidebarLayout, {
         { value: 'x-large', label: 'X-Large (384px)' },
       ],
       defaultValue: '1/3',
+    }),
+    padding: Select({
+      label: 'Outer padding',
+      options: spacingOptions,
+      defaultValue: 'lg',
+    }),
+    columnGap: Select({
+      label: 'Gap between columns',
+      options: spacingOptions,
+      defaultValue: 'lg',
+    }),
+    rowGap: Select({
+      label: 'Gap when stacked (mobile)',
+      options: spacingOptions,
+      defaultValue: 'md',
+    }),
+    stickyTop: Select({
+      label: 'Sidebar sticky offset',
+      options: spacingOptions,
+      defaultValue: 'md',
     }),
   },
 });
