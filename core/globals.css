@@ -426,6 +426,21 @@
 }
 .ges-site-header__nav {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+/* Any Makeswift Slot child dropped into the header nav aligns inline. */
+.ges-site-header__nav > * {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* Keep each nav component's top-level items on one line inside the header. */
+.ges-site-header__nav .ges-nav__top {
+  flex-wrap: nowrap;
 }
 .ges-site-header__actions {
   display: inline-flex;
