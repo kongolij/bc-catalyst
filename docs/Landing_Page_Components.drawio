@@ -1,0 +1,221 @@
+<mxfile host="app.diagrams.net" agent="claude" version="24.0.0">
+  <diagram name="Landing Page Components" id="landing-page">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= LANDING PAGE ROOT ================= -->
+        <mxCell id="landing" value="Landing Page (/home-poc)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="280" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= LEVEL 1 COMPONENTS ================= -->
+        <mxCell id="siteHeader" value="Site Header&#10;(ges-site-header)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="showInfo" value="Show Info Header&#10;(ges-show-info) [NEW]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="200" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="showTimeline" value="Show Timeline&#10;(ges-show-timeline)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="270" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stickySidebar" value="Sticky Sidebar Layout&#10;(layouts-sticky-sidebar)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= LEVEL 2: MAIN COLUMN ================= -->
+        <mxCell id="mainCol" value="[ Main Column ]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="410" width="220" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="prodServ" value="Products &amp; Services&#10;(ges-category-grid)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="470" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="shipping" value="Shipping &amp; Material Handling&#10;(ges-shipping-links)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="540" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="resources" value="Resources and Information&#10;(ges-resources-links)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="610" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= LEVEL 2: SIDEBAR COLUMN ================= -->
+        <mxCell id="sideCol" value="[ Sidebar Column ]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="680" width="220" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="booth" value="Current Booth&#10;(ges-current-booth) [NEW]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="740" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="checklist" value="Checklist&#10;(ges-checklist) [NEW]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="810" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="impDates" value="Important Dates&#10;(ges-important-dates)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="880" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="needHelp" value="Need Help&#10;(ges-need-help)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="950" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= LEVEL 1 CONTINUED ================= -->
+        <mxCell id="splitBanner" value="Split Banner&#10;(ges-split-banner)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1020" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="footer" value="Site Footer&#10;(site-footer)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1090" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= DATA MODELS ================= -->
+        <mxCell id="dm_siteHeader" value="&lt;b&gt;SiteHeader&lt;/b&gt;&#10;&#10;logo: Image&#10;navigation: NavItem[]&#10;actions: HeaderAction[]&#10;announcement: string?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="115" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_showInfo" value="&lt;b&gt;ShowInfo&lt;/b&gt;&#10;&#10;title: string&#10;venueName: string&#10;venueAddress: string&#10;startDate: iso&#10;endDate: iso&#10;orderBeforeDate: iso" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="240" width="260" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_timeline" value="&lt;b&gt;TimelineEvent&lt;/b&gt;&#10;&#10;id: string&#10;day: number&#10;month: string&#10;labels: string[]&#10;date: iso" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="385" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_categoryBtn" value="&lt;b&gt;CategoryButton&lt;/b&gt;&#10;&#10;categoryId: string&#10;label: string&#10;href: string&#10;iconUrl: string?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="510" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_linkSection" value="&lt;b&gt;LinkSection&lt;/b&gt;&#10;&#10;title: string&#10;description: string?&#10;links: LinkItem[]&#10;&#10;&lt;i&gt;LinkItem { label, href }&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="635" width="260" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_booth" value="&lt;b&gt;Booth&lt;/b&gt;&#10;&#10;boothNumber: string&#10;hallName: string&#10;size: string&#10;category: string?&#10;switchBoothHref: string" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="780" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_checklist" value="&lt;b&gt;ChecklistItem&lt;/b&gt;&#10;&#10;id: string&#10;title: string&#10;status: pending | complete&#10;optional: boolean&#10;type: manual | page-visit" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="915" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_dateRow" value="&lt;b&gt;DateRow&lt;/b&gt;&#10;&#10;id: string&#10;startDate: iso&#10;endDate: iso&#10;scheduleType: string&#10;scheduleNotes: string&#10;isCountdownTarget: boolean&#10;&#10;&lt;i&gt;source: api | manual&lt;/i&gt;&#10;&lt;i&gt;days = daysBetween(now, next.start)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="830" width="260" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_contact" value="&lt;b&gt;Contact&lt;/b&gt;&#10;&#10;label: string&#10;phoneNumber: string&#10;icon: string?" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="1000" width="260" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_panel" value="&lt;b&gt;Panel&lt;/b&gt;&#10;&#10;background: color&#10;textColor: color&#10;imageUrl: string?&#10;title: string&#10;body: string&#10;buttonLabel: string&#10;buttonHref: string" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="1000" width="260" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dm_footer" value="&lt;b&gt;FooterConfig&lt;/b&gt;&#10;&#10;logo: Image&#10;columns: FooterColumn[]&#10;legalText: string&#10;socialLinks: LinkItem[]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="880" y="1160" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ================= TREE EDGES: Landing -> L1 ================= -->
+        <mxCell id="e_l_sh" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="siteHeader">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_l_si" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="showInfo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_l_st" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="showTimeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_l_ss" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="stickySidebar">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_l_sb" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="splitBanner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_l_ft" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="landing" target="footer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= TREE EDGES: Sticky Sidebar -> L2 ================= -->
+        <mxCell id="e_ss_main" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stickySidebar" target="mainCol">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ss_side" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="stickySidebar" target="sideCol">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Main column -> children -->
+        <mxCell id="e_mc_ps" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="mainCol" target="prodServ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_mc_sh" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="mainCol" target="shipping">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_mc_res" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="mainCol" target="resources">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Sidebar column -> children -->
+        <mxCell id="e_sc_bt" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="sideCol" target="booth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sc_ck" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="sideCol" target="checklist">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sc_id" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="sideCol" target="impDates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sc_nh" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;exitX=0;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="sideCol" target="needHelp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= DATA MODEL EDGES ================= -->
+        <mxCell id="d_sh" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="siteHeader" target="dm_siteHeader">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_si" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="showInfo" target="dm_showInfo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_st" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="showTimeline" target="dm_timeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ps" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="prodServ" target="dm_categoryBtn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ship" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" edge="1" parent="1" source="shipping" target="dm_linkSection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_res" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.7;" edge="1" parent="1" source="resources" target="dm_linkSection">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_bt" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="booth" target="dm_booth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ck" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="checklist" target="dm_checklist">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_id" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="impDates" target="dm_dateRow">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_nh" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="needHelp" target="dm_contact">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_sb" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="splitBanner" target="dm_panel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ft" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="footer" target="dm_footer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= LEGEND ================= -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&#10;&#10;— solid line = component tree&#10;— dashed arrow = data model binding&#10;[NEW] = component not yet built" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1200" width="300" height="110" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

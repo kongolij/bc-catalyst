@@ -8,16 +8,26 @@ interface DateRow {
   endDate?: string;
   scheduleType?: string;
   scheduleNotes?: string;
+  isCountdownTarget?: boolean;
 }
 
 interface Props {
   className?: string;
+  source?: 'api' | 'manual';
   title?: string;
   countdownLabel?: string;
   countdownBg?: string;
   countdownText?: string;
   maxRows?: number;
   calendarLinkLabel?: string;
+  manualRows?: DateRow[];
+}
+
+function parseIso(value?: string): Date | null {
+  if (!value) return null;
+  const hasTime = /T\d{2}:\d{2}/.test(value);
+  const d = new Date(hasTime ? value : value + 'T00:00:00');
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 function daysBetween(from: Date, to: Date): number {
@@ -28,77 +38,88 @@ function daysBetween(from: Date, to: Date): number {
 }
 
 function formatRow(r: DateRow): string {
-  if (!r.startDate) return '';
-  const hasTime = /T\d{2}:\d{2}/.test(r.startDate);
-  const d = new Date(hasTime ? r.startDate : r.startDate + 'T00:00:00');
-  if (Number.isNaN(d.getTime())) return r.startDate;
-  const datePart = d.toLocaleDateString('en-US', {
+  const start = parseIso(r.startDate);
+  if (!start) return '';
+  const hasTime = /T\d{2}:\d{2}/.test(r.startDate ?? '');
+  const datePart = start.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: '2-digit',
     year: 'numeric',
   });
   const timePart = hasTime
-    ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    ? start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     : '';
+  const end = parseIso(r.endDate);
   const endTimePart =
-    r.endDate && /T\d{2}:\d{2}/.test(r.endDate)
-      ? new Date(r.endDate).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        })
+    end && /T\d{2}:\d{2}/.test(r.endDate ?? '')
+      ? end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
       : '';
   const timeRange = timePart && endTimePart ? `${timePart} - ${endTimePart}` : timePart;
-  const label = r.scheduleType ?? '';
-  return [datePart, timeRange, label].filter(Boolean).join(', ').replace(', ,', ',');
+  const parts = [datePart];
+  if (timeRange) parts.push(timeRange);
+  if (r.scheduleType) parts.push(r.scheduleType);
+  return parts.join(', ');
 }
 
 export function GesImportantDatesClient({
   className,
+  source = 'api',
   title = 'Important Dates',
   countdownLabel = 'Days Until {label}',
   countdownBg = '#c8d629',
   countdownText = '#0a2540',
   maxRows = 3,
   calendarLinkLabel = '+ Add Dates to Calendar',
+  manualRows,
 }: Props) {
-  const [rows, setRows] = useState<DateRow[]>([]);
+  const [apiRows, setApiRows] = useState<DateRow[]>([]);
 
   useEffect(() => {
+    if (source !== 'api') return;
     let cancelled = false;
     fetch('/api/ges/quick-facts/dates')
       .then((r) => r.json())
       .then((data: { dates: DateRow[] }) => {
-        if (!cancelled) setRows(data.dates ?? []);
+        if (!cancelled) setApiRows(data.dates ?? []);
       })
       .catch(() => {
-        if (!cancelled) setRows([]);
+        if (!cancelled) setApiRows([]);
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [source]);
+
+  const rows = useMemo<DateRow[]>(() => {
+    if (source === 'manual') return (manualRows ?? []).filter((r) => !!r.startDate);
+    return apiRows;
+  }, [source, apiRows, manualRows]);
 
   const upcoming = useMemo<DateRow[]>(() => {
     const now = new Date();
     return rows
       .filter((r) => {
-        if (!r.startDate) return false;
-        const d = new Date(r.startDate);
-        return !Number.isNaN(d.getTime()) && d.getTime() >= now.getTime() - 1000 * 60 * 60 * 24;
+        const d = parseIso(r.startDate);
+        return d !== null && d.getTime() >= now.getTime() - 1000 * 60 * 60 * 24;
       })
-      .sort((a, b) => new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime());
+      .sort((a, b) => parseIso(a.startDate)!.getTime() - parseIso(b.startDate)!.getTime());
   }, [rows]);
 
-  const next = upcoming[0];
+  const countdownTarget = useMemo<DateRow | undefined>(() => {
+    const flagged = upcoming.find((r) => r.isCountdownTarget);
+    return flagged ?? upcoming[0];
+  }, [upcoming]);
+
   const shown = upcoming.slice(0, Math.max(1, maxRows));
 
   const countdown = useMemo(() => {
-    if (!next?.startDate) return null;
-    const d = daysBetween(new Date(), new Date(next.startDate));
-    return { days: Math.max(0, d), label: next.scheduleType ?? '' };
-  }, [next]);
+    if (!countdownTarget?.startDate) return null;
+    const target = parseIso(countdownTarget.startDate);
+    if (!target) return null;
+    const days = daysBetween(new Date(), target);
+    return { days: Math.max(0, days), label: countdownTarget.scheduleType ?? '' };
+  }, [countdownTarget]);
 
   if (rows.length === 0) return null;
 
@@ -126,9 +147,11 @@ export function GesImportantDatesClient({
         ))}
       </ul>
 
-      <a className="ges-important-dates__cal" href="/api/ges/quick-facts/dates">
-        {calendarLinkLabel}
-      </a>
+      {source === 'api' ? (
+        <a className="ges-important-dates__cal" href="/api/ges/quick-facts/dates">
+          {calendarLinkLabel}
+        </a>
+      ) : null}
     </section>
   );
 }
