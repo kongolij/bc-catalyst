@@ -11,8 +11,8 @@
         </mxCell>
 
         <!-- ================= LEGEND ================= -->
-        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&#10;&#10;[API]         — data always from API&#10;[MANUAL]  — authored on canvas&#10;[API+MAN] — source toggle (API or Manual)&#10;[NEW]      — not yet built&#10;&#10;solid line   — component tree&#10;dashed line — data model binding" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
-          <mxGeometry x="20" y="2400" width="340" height="160" as="geometry" />
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&#10;&#10;[API]         — data always from API&#10;[MANUAL]  — authored on canvas&#10;[API+MAN] — source toggle (API or Manual)&#10;[NEW]      — not yet built&#10;Alt: ...      — alternative component (dashed box)&#10;&#10;solid line   — component tree&#10;dashed line — data model binding or alt link&#10;&#10;For [API+MAN] components, two data model boxes:&#10;• solid box = API mode shape&#10;• dashed box = Manual mode shape" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="2400" width="400" height="220" as="geometry" />
         </mxCell>
 
         <!-- ================= SITE HEADER (composite) ================= -->
@@ -62,8 +62,14 @@
           <mxGeometry x="380" y="830" width="220" height="40" as="geometry" />
         </mxCell>
 
-        <mxCell id="prodServ" value="Products &amp; Services&#10;(ges-category-grid)&#10;[API + MANUAL]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
+        <mxCell id="prodServ" value="Products &amp; Services&#10;(ges-category-grid) — default&#10;[API + MANUAL]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
           <mxGeometry x="380" y="890" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="prodServAlt1" value="Alt: Category Card&#10;(ges-category-card)&#10;[API + MANUAL]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="890" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="prodServAlt2" value="Alt: Action Buttons ×N&#10;(ges-action-button)&#10;[MANUAL]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="890" width="260" height="60" as="geometry" />
         </mxCell>
 
         <mxCell id="shipping" value="Shipping &amp; Material Handling&#10;(ges-shipping-links)&#10;[API + MANUAL]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" vertex="1" parent="1">
@@ -108,8 +114,11 @@
           <mxGeometry x="720" y="115" width="260" height="110" as="geometry" />
         </mxCell>
 
-        <mxCell id="dm_catalogNav" value="&lt;b&gt;CategoryNode&lt;/b&gt;&#10;&#10;entityId: number&#10;name: string&#10;path: string&#10;children: CategoryNode[]&#10;&#10;&lt;i&gt;source: /api/bc/nav-tree&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
-          <mxGeometry x="720" y="255" width="260" height="140" as="geometry" />
+        <mxCell id="dm_catalogNav" value="&lt;b&gt;CategoryNode&lt;/b&gt;  (API mode)&#10;&#10;entityId: number&#10;name: string&#10;path: string&#10;children: CategoryNode[]&#10;&#10;&lt;i&gt;source: /api/bc/nav-tree&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="720" y="255" width="260" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="dm_catalogNav_manual" value="&lt;b&gt;NavItem&lt;/b&gt;  (Manual mode)&#10;&#10;label: string&#10;href: string&#10;description: string?&#10;children: NavItem[]&#10;&#10;&lt;i&gt;authored in editor List&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="255" width="260" height="140" as="geometry" />
         </mxCell>
 
         <mxCell id="dm_contentNav" value="&lt;b&gt;ContentNavItem&lt;/b&gt;&#10;&#10;path: string&#10;title: string&#10;children: ContentNavItem[]&#10;&#10;&lt;i&gt;source: /api/makeswift/pages&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
@@ -132,8 +141,11 @@
           <mxGeometry x="1040" y="645" width="260" height="140" as="geometry" />
         </mxCell>
 
-        <mxCell id="dm_categoryBtn" value="&lt;b&gt;CategoryButton&lt;/b&gt;&#10;&#10;categoryId: string&#10;label: string&#10;href: string&#10;iconUrl: string?&#10;&#10;&lt;i&gt;source: /api/bc/categories/top-level&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
-          <mxGeometry x="720" y="870" width="260" height="140" as="geometry" />
+        <mxCell id="dm_categoryBtn" value="&lt;b&gt;CategoryButton&lt;/b&gt;  (API mode)&#10;&#10;categoryId: string&#10;label: string&#10;href: string&#10;iconUrl: string?&#10;&#10;&lt;i&gt;source: /api/bc/categories/top-level&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="870" width="260" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="dm_categoryBtn_manual" value="&lt;b&gt;CategoryEntry&lt;/b&gt;  (Manual mode)&#10;&#10;titleOverride: string&#10;iconUrl: Image?&#10;hrefOverride: string&#10;categoryId: string?&#10;&#10;&lt;i&gt;authored in editor List&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="870" width="260" height="140" as="geometry" />
         </mxCell>
 
         <mxCell id="dm_linkSection" value="&lt;b&gt;LinkSection&lt;/b&gt;&#10;&#10;title: string&#10;description: string?&#10;links: LinkItem[]&#10;&#10;&lt;i&gt;LinkItem { label, href }&lt;/i&gt;&#10;&lt;i&gt;source: /api/ges/show-links&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
@@ -242,6 +254,9 @@
         <mxCell id="d_cn" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="catalogNav" target="dm_catalogNav">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="d_cn_manual" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="dm_catalogNav" target="dm_catalogNav_manual">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="d_ct" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="contentNav" target="dm_contentNav">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -257,7 +272,16 @@
         <mxCell id="d_st" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="showTimeline" target="dm_timeline">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="d_ps" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="prodServ" target="dm_categoryBtn">
+        <mxCell id="e_mc_alt1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="prodServ" target="prodServAlt1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_mc_alt2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=none;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="prodServAlt1" target="prodServAlt2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ps" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="prodServAlt2" target="dm_categoryBtn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d_ps_manual" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="dm_categoryBtn" target="dm_categoryBtn_manual">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="d_ship" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;endArrow=open;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" edge="1" parent="1" source="shipping" target="dm_linkSection">
