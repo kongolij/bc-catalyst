@@ -11,8 +11,10 @@ interface ApiRow {
   isCountdownTarget?: boolean;
 }
 
+type ComboValue = string | { value?: string; id?: string } | undefined;
+
 interface ManualRow {
-  matchId?: string;
+  matchId?: ComboValue;
   startDate?: string;
   endDate?: string;
   scheduleType?: string;
@@ -21,7 +23,16 @@ interface ManualRow {
 }
 
 interface HiddenId {
-  id?: string;
+  id?: ComboValue;
+}
+
+function comboToString(v: ComboValue): string {
+  if (typeof v === 'string') return v.trim();
+  if (v && typeof v === 'object') {
+    const raw = v.value ?? v.id ?? '';
+    return typeof raw === 'string' ? raw.trim() : '';
+  }
+  return '';
 }
 
 interface Props {
@@ -98,7 +109,7 @@ export function GesImportantDatesOverrideClient({
   countdownLabel = 'Days Until {label}',
   countdownBg = '#c8d629',
   countdownText = '#0a2540',
-  maxRows = 3,
+  maxRows = 10,
   calendarLinkLabel = '+ Add Dates to Calendar',
   manualRows,
   hiddenIds,
@@ -121,15 +132,17 @@ export function GesImportantDatesOverrideClient({
   }, []);
 
   const merged = useMemo<ApiRow[]>(() => {
-    const hidden = new Set((hiddenIds ?? []).map((h) => h.id?.trim()).filter(Boolean));
+    const hidden = new Set(
+      (hiddenIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
+    );
     const overridesById = new Map<string, ManualRow>();
     const additions: ManualRow[] = [];
 
     (manualRows ?? []).forEach((m) => {
-      const key = m.matchId?.trim();
+      const key = comboToString(m.matchId);
       if (key) {
         overridesById.set(key, m);
-      } else if (m.startDate?.trim()) {
+      } else if (m.startDate?.trim() || m.scheduleType?.trim()) {
         additions.push(m);
       }
     });
@@ -140,6 +153,16 @@ export function GesImportantDatesOverrideClient({
         const override = r.id ? overridesById.get(r.id) : undefined;
         return override ? mergeRow(r, override) : r;
       });
+
+    // eslint-disable-next-line no-console
+    console.debug('[ImportantDatesOverride] merge', {
+      apiRows,
+      manualRows,
+      hiddenIds,
+      overrides: Array.from(overridesById.keys()),
+      additionsCount: additions.length,
+      merged: [...kept, ...additions],
+    });
 
     return [...kept, ...additions];
   }, [apiRows, manualRows, hiddenIds]);

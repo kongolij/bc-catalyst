@@ -53,9 +53,9 @@ runtime.registerComponent(GesImportantDatesOverrideClient, {
     countdownText: Color({ label: 'Countdown text', defaultValue: '#0a2540' }),
     maxRows: NumberControl({
       label: 'Max rows to show',
-      defaultValue: 3,
+      defaultValue: 10,
       min: 1,
-      max: 10,
+      max: 20,
       step: 1,
     }),
     calendarLinkLabel: TextInput({
