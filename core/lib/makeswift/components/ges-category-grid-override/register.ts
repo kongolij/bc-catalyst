@@ -14,14 +14,22 @@ import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesCategoryGridOverrideClient } from './client';
 
+const isRootPath = (path?: string) =>
+  (path ?? '').split('/').filter(Boolean).length === 1;
+
 async function fetchApiTopLevelOptions(query: string) {
   try {
-    const res = await fetch('/api/bc/categories/top-level');
+    const res = await fetch('/api/bc/categories/top-level?filter=all');
     const data = (await res.json()) as {
-      categories: Array<{ entityId: number; name: string }>;
+      categories: Array<{ entityId: number; name: string; path?: string }>;
     };
+    const roots = (data.categories ?? []).filter((c) => isRootPath(c.path));
+
+    // eslint-disable-next-line no-console
+    console.debug('[CategoryGridOverride:picker] roots fetched', roots);
+
     const q = (query ?? '').toLowerCase();
-    return (data.categories ?? [])
+    return roots
       .filter(
         (c) => !q || c.name.toLowerCase().includes(q) || String(c.entityId).includes(q),
       )
