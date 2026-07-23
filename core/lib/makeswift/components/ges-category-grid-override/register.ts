@@ -19,14 +19,17 @@ const isRootPath = (path?: string) =>
 
 async function fetchApiTopLevelOptions(query: string) {
   try {
-    const res = await fetch('/api/bc/categories/top-level?filter=all');
+    // Match the grid's default apiFilter so the picker shows exactly the
+    // roots that render on the page. Editors that flip the grid to a
+    // different filter can still add new cards manually by categoryId.
+    const res = await fetch('/api/bc/categories/top-level?filter=featured');
     const data = (await res.json()) as {
       categories: Array<{ entityId: number; name: string; path?: string }>;
     };
     const roots = (data.categories ?? []).filter((c) => isRootPath(c.path));
 
     // eslint-disable-next-line no-console
-    console.debug('[CategoryGridOverride:picker] roots fetched', roots);
+    console.debug('[CategoryGridOverride:picker] featured roots fetched', roots);
 
     const q = (query ?? '').toLowerCase();
     return roots
