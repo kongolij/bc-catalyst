@@ -20,3 +20,5 @@ coverage/
 .history
 .unlighthouse
 .env*
+*.env
+tsconfig.tsbuildinfo

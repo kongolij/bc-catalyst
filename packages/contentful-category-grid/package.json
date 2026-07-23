@@ -1,0 +1,27 @@
+{
+  "name": "@ges/contentful-category-grid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "create-app-definition": "contentful-app-scripts create-app-definition",
+    "upload": "contentful-app-scripts upload --bundle-dir ./dist",
+    "activate": "contentful-app-scripts activate",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@contentful/app-sdk": "^4.68.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@contentful/app-scripts": "^0.13.42",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.5.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.4.3"
+  }
+}
