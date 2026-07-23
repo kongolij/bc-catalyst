@@ -1,6 +1,7 @@
 import {
   Checkbox,
   Color,
+  Combobox,
   Group,
   List,
   Number as NumberControl,
@@ -12,16 +13,37 @@ import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesImportantDatesOverrideClient } from './client';
 
+async function fetchApiRowOptions(query: string) {
+  try {
+    const res = await fetch('/api/ges/quick-facts/dates');
+    const data = (await res.json()) as {
+      dates: Array<{ id?: string; scheduleType?: string; startDate?: string }>;
+    };
+    const q = (query ?? '').toLowerCase();
+    return (data.dates ?? [])
+      .filter((r) => r.id)
+      .filter((r) =>
+        q
+          ? (r.id ?? '').toLowerCase().includes(q) ||
+            (r.scheduleType ?? '').toLowerCase().includes(q)
+          : true,
+      )
+      .map((r) => ({
+        id: r.id!,
+        label: `${r.scheduleType ?? r.id!} (${r.id!})`,
+        value: r.id!,
+      }));
+  } catch {
+    return [];
+  }
+}
+
 runtime.registerComponent(GesImportantDatesOverrideClient, {
   type: 'ges-important-dates-override',
   label: 'GES / Important Dates (Override)',
   icon: 'text',
   props: {
     className: Style(),
-    disableApi: Checkbox({
-      label: 'Disable API (use manual entries only)',
-      defaultValue: false,
-    }),
     title: TextInput({ label: 'Section title', defaultValue: 'Important Dates' }),
     countdownLabel: TextInput({
       label: 'Countdown label (uses {label} placeholder)',
@@ -45,9 +67,9 @@ runtime.registerComponent(GesImportantDatesOverrideClient, {
       type: Group({
         label: 'Entry',
         props: {
-          matchId: TextInput({
-            label: 'Override API id (leave empty to add a new row)',
-            defaultValue: '',
+          matchId: Combobox({
+            label: 'Override API row (leave empty to add a new row)',
+            getOptions: fetchApiRowOptions,
           }),
           startDate: TextInput({
             label: 'Start date (ISO, e.g. 2026-08-09T08:00:00)',
@@ -68,18 +90,26 @@ runtime.registerComponent(GesImportantDatesOverrideClient, {
           }),
         },
       }),
-      getItemLabel: (r) =>
-        r?.matchId ? `Override: ${r.matchId}` : r?.scheduleType || r?.startDate || 'New entry',
+      getItemLabel: (r) => {
+        const key = typeof r?.matchId === 'string' ? r.matchId : r?.matchId?.value;
+        return key ? `Override: ${key}` : r?.scheduleType || r?.startDate || 'New entry';
+      },
     }),
     hiddenIds: List({
-      label: 'Hide API rows by id',
+      label: 'Hide API rows',
       type: Group({
-        label: 'Hidden id',
+        label: 'Hidden row',
         props: {
-          id: TextInput({ label: 'API row id to hide', defaultValue: '' }),
+          id: Combobox({
+            label: 'API row to hide',
+            getOptions: fetchApiRowOptions,
+          }),
         },
       }),
-      getItemLabel: (h) => h?.id || 'id',
+      getItemLabel: (h) => {
+        const key = typeof h?.id === 'string' ? h.id : h?.id?.value;
+        return key || 'row';
+      },
     }),
   },
 });

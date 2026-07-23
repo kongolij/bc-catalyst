@@ -26,7 +26,6 @@ interface HiddenId {
 
 interface Props {
   className?: string;
-  disableApi?: boolean;
   title?: string;
   countdownLabel?: string;
   countdownBg?: string;
@@ -95,7 +94,6 @@ function mergeRow(apiRow: ApiRow, manual: ManualRow): ApiRow {
 
 export function GesImportantDatesOverrideClient({
   className,
-  disableApi = false,
   title = 'Important Dates',
   countdownLabel = 'Days Until {label}',
   countdownBg = '#c8d629',
@@ -108,10 +106,6 @@ export function GesImportantDatesOverrideClient({
   const [apiRows, setApiRows] = useState<ApiRow[]>([]);
 
   useEffect(() => {
-    if (disableApi) {
-      setApiRows([]);
-      return;
-    }
     let cancelled = false;
     fetch('/api/ges/quick-facts/dates')
       .then((r) => r.json())
@@ -124,7 +118,7 @@ export function GesImportantDatesOverrideClient({
     return () => {
       cancelled = true;
     };
-  }, [disableApi]);
+  }, []);
 
   const merged = useMemo<ApiRow[]>(() => {
     const hidden = new Set((hiddenIds ?? []).map((h) => h.id?.trim()).filter(Boolean));
@@ -203,11 +197,9 @@ export function GesImportantDatesOverrideClient({
         <p className="ges-important-dates__empty">No upcoming dates.</p>
       )}
 
-      {!disableApi ? (
-        <a className="ges-important-dates__cal" href="/api/ges/quick-facts/dates">
-          {calendarLinkLabel}
-        </a>
-      ) : null}
+      <a className="ges-important-dates__cal" href="/api/ges/quick-facts/dates">
+        {calendarLinkLabel}
+      </a>
     </section>
   );
 }
