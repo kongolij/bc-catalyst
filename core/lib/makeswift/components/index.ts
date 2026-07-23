@@ -64,6 +64,7 @@ import './ges-selectable-dates/register';
 import './shipping-address-card/register';
 import './shipping-addresses/register';
 import './logistics-block/register';
+import './logistics-block-override/register';
 import './logistics-card/register';
 import './ges-category-card/register';
 import './ges-category-grid/register';
