@@ -7,7 +7,7 @@ import { ShowMicroSiteClient } from './client';
 
 runtime.registerComponent(ShowMicroSiteClient, {
   type: 'show-microsite-page',
-  label: 'GES / Show Microsite Page',
+  label: 'GES / Pages / Show Microsite',
   icon: 'layout',
   hidden: true,
   props: {

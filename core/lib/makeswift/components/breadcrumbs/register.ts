@@ -6,7 +6,7 @@ import { GESBreadcrumbs } from './client';
 
 runtime.registerComponent(GESBreadcrumbs, {
   type: 'ges-breadcrumbs',
-  label: 'GES / Breadcrumbs',
+  label: 'GES / Primitives / Breadcrumbs',
   icon: 'navigation',
   props: {
     breadcrumbs: List({

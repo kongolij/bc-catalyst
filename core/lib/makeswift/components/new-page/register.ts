@@ -13,7 +13,7 @@ const optionalSlot = () =>
 
 runtime.registerComponent(MakeswiftNewPage, {
   type: 'ges-new-page-template',
-  label: 'GES / New Page Template (No Header/Footer)',
+  label: 'GES / Pages / New (No Header or Footer)',
   props: {
     top: optionalSlot(),
     content: optionalSlot(),

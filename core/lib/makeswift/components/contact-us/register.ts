@@ -7,7 +7,7 @@ import { ContactUsClient } from './client';
 
 runtime.registerComponent(ContactUsClient, {
   type: 'contact-us-page',
-  label: 'GES / Contact Us Page',
+  label: 'GES / Pages / Contact Us',
   icon: 'layout',
   hidden: true,
   props: {

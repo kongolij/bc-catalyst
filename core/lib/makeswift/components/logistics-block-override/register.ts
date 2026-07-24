@@ -6,7 +6,7 @@ import { LogisticsBlockOverrideClient } from './client';
 
 runtime.registerComponent(LogisticsBlockOverrideClient, {
   type: 'ges-logistics-block-override',
-  label: 'GES / Logistics Block (Override)',
+  label: 'GES / Blocks / Logistics (Override)',
   icon: 'carousel',
   props: {
     className: Style(),

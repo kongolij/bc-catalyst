@@ -37,6 +37,7 @@ function comboToString(v: ComboValue): string {
 
 interface Props {
   className?: string;
+  showDataDiagnostics?: boolean;
   title?: string;
   countdownLabel?: string;
   countdownBg?: string;
@@ -45,6 +46,25 @@ interface Props {
   calendarLinkLabel?: string;
   manualRows?: ManualRow[];
   hiddenIds?: HiddenId[];
+}
+
+type Provenance = 'api' | 'api-with-override' | 'local';
+
+interface MergedRow extends ApiRow {
+  provenance: Provenance;
+  overriddenFields: string[];
+}
+
+interface DataDiagnostic {
+  id: string;
+  label?: string;
+}
+
+interface MergeResult {
+  rows: MergedRow[];
+  excluded: DataDiagnostic[];
+  orphanedOverrides: DataDiagnostic[];
+  orphanedExclusions: DataDiagnostic[];
 }
 
 function parseIso(value?: string): Date | null {
@@ -103,8 +123,19 @@ function mergeRow(apiRow: ApiRow, manual: ManualRow): ApiRow {
   };
 }
 
+function getOverriddenFields(manual: ManualRow): string[] {
+  return [
+    manual.startDate?.trim() ? 'startDate' : null,
+    manual.endDate?.trim() ? 'endDate' : null,
+    manual.scheduleType?.trim() ? 'scheduleType' : null,
+    manual.scheduleNotes?.trim() ? 'scheduleNotes' : null,
+    manual.isCountdownTarget ? 'isCountdownTarget' : null,
+  ].filter((field): field is string => field !== null);
+}
+
 export function GesImportantDatesOverrideClient({
   className,
+  showDataDiagnostics = false,
   title = 'Important Dates',
   countdownLabel = 'Days Until {label}',
   countdownBg = '#c8d629',
@@ -115,23 +146,31 @@ export function GesImportantDatesOverrideClient({
   hiddenIds,
 }: Props) {
   const [apiRows, setApiRows] = useState<ApiRow[]>([]);
+  const [sourceLoaded, setSourceLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setSourceLoaded(false);
     fetch('/api/ges/quick-facts/dates')
       .then((r) => r.json())
       .then((data: { dates: ApiRow[] }) => {
-        if (!cancelled) setApiRows(data.dates ?? []);
+        if (!cancelled) {
+          setApiRows(data.dates ?? []);
+          setSourceLoaded(true);
+        }
       })
       .catch(() => {
-        if (!cancelled) setApiRows([]);
+        if (!cancelled) {
+          setApiRows([]);
+          setSourceLoaded(true);
+        }
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const merged = useMemo<ApiRow[]>(() => {
+  const mergeResult = useMemo<MergeResult>(() => {
     const hidden = new Set(
       (hiddenIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
     );
@@ -146,36 +185,63 @@ export function GesImportantDatesOverrideClient({
         additions.push(m);
       }
     });
+    const sourceById = new Map(
+      apiRows
+        .filter((row): row is ApiRow & { id: string } => Boolean(row.id))
+        .map((row) => [row.id, row]),
+    );
+    const sourceIds = new Set(sourceById.keys());
 
-    const kept = apiRows
+    const kept: MergedRow[] = apiRows
       .filter((r) => !r.id || !hidden.has(r.id))
       .map((r) => {
         const override = r.id ? overridesById.get(r.id) : undefined;
-        return override ? mergeRow(r, override) : r;
+        return override
+          ? {
+              ...mergeRow(r, override),
+              provenance: 'api-with-override',
+              overriddenFields: getOverriddenFields(override),
+            }
+          : { ...r, provenance: 'api', overriddenFields: [] };
       });
 
-    // eslint-disable-next-line no-console
-    console.debug('[ImportantDatesOverride] merge', {
-      apiRows,
-      manualRows,
-      hiddenIds,
-      overrides: Array.from(overridesById.keys()),
-      additionsCount: additions.length,
-      merged: [...kept, ...additions],
-    });
+    const local: MergedRow[] = additions.map((row, index) => ({
+      ...row,
+      id: `local-${index}`,
+      provenance: 'local',
+      overriddenFields: [],
+    }));
+    const excluded = Array.from(hidden)
+      .filter((id) => sourceIds.has(id))
+      .map((id) => ({ id, label: sourceById.get(id)?.scheduleType }));
+    const orphanedOverrides = sourceLoaded
+      ? Array.from(overridesById.keys())
+          .filter((id) => !sourceIds.has(id))
+          .map((id) => ({ id }))
+      : [];
+    const orphanedExclusions = sourceLoaded
+      ? Array.from(hidden)
+          .filter((id) => !sourceIds.has(id))
+          .map((id) => ({ id }))
+      : [];
 
-    return [...kept, ...additions];
-  }, [apiRows, manualRows, hiddenIds]);
+    return {
+      rows: [...kept, ...local],
+      excluded,
+      orphanedOverrides,
+      orphanedExclusions,
+    };
+  }, [apiRows, manualRows, hiddenIds, sourceLoaded]);
 
-  const upcoming = useMemo<ApiRow[]>(() => {
+  const upcoming = useMemo<MergedRow[]>(() => {
     const now = new Date();
-    return merged
+    return mergeResult.rows
       .filter((r) => {
         const d = parseIso(r.startDate);
         return d !== null && d.getTime() >= now.getTime() - 1000 * 60 * 60 * 24;
       })
       .sort((a, b) => parseIso(a.startDate)!.getTime() - parseIso(b.startDate)!.getTime());
-  }, [merged]);
+  }, [mergeResult.rows]);
 
   const countdownTarget = useMemo<ApiRow | undefined>(() => {
     const flagged = upcoming.find((r) => r.isCountdownTarget);
@@ -193,6 +259,8 @@ export function GesImportantDatesOverrideClient({
   }, [countdownTarget]);
 
   const filledLabel = countdownLabel.replace('{label}', countdown?.label ?? '');
+  const orphanCount =
+    mergeResult.orphanedOverrides.length + mergeResult.orphanedExclusions.length;
 
   return (
     <section className={['ges-important-dates', className].filter(Boolean).join(' ')}>
@@ -213,6 +281,20 @@ export function GesImportantDatesOverrideClient({
           {shown.map((r, i) => (
             <li key={r.id ?? i} className="ges-important-dates__row">
               {formatRow(r)}
+              {showDataDiagnostics ? (
+                <div className="ges-data-record__diagnostics">
+                  <span data-provenance={r.provenance}>
+                    {r.provenance === 'api'
+                      ? 'API'
+                      : r.provenance === 'api-with-override'
+                        ? 'API + override'
+                        : 'Local'}
+                  </span>
+                  {r.overriddenFields.length > 0 ? (
+                    <small>Customized: {r.overriddenFields.join(', ')}</small>
+                  ) : null}
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -223,6 +305,45 @@ export function GesImportantDatesOverrideClient({
       <a className="ges-important-dates__cal" href="/api/ges/quick-facts/dates">
         {calendarLinkLabel}
       </a>
+      {showDataDiagnostics ? (
+        <aside className="ges-data-diagnostics">
+          <strong>Data diagnostics</strong>
+          {!sourceLoaded ? <p>Loading source records…</p> : null}
+          {mergeResult.excluded.length > 0 ? (
+            <>
+              <h4>Excluded API records</h4>
+              <ul>
+                {mergeResult.excluded.map((item) => (
+                  <li key={`excluded-${item.id}`}>
+                    {item.label ?? item.id} <span>Excluded</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          {orphanCount > 0 ? (
+            <>
+              <h4>{orphanCount} orphaned customization(s)</h4>
+              <ul>
+                {mergeResult.orphanedOverrides.map((item) => (
+                  <li key={`override-${item.id}`}>
+                    Override for {item.id} no longer matches an API record.
+                  </li>
+                ))}
+                {mergeResult.orphanedExclusions.map((item) => (
+                  <li key={`exclusion-${item.id}`}>
+                    Exclusion for {item.id} no longer matches an API record.
+                  </li>
+                ))}
+              </ul>
+              <p>Remove these IDs from the component’s override or hidden lists.</p>
+            </>
+          ) : null}
+          {sourceLoaded && mergeResult.excluded.length === 0 && orphanCount === 0 ? (
+            <p>No exclusions or orphaned customizations.</p>
+          ) : null}
+        </aside>
+      ) : null}
     </section>
   );
 }

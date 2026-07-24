@@ -6,7 +6,7 @@ import { LogisticsBlockClient } from './client';
 
 runtime.registerComponent(LogisticsBlockClient, {
   type: 'ges-logistics-block',
-  label: 'GES / Logistics Block',
+  label: 'GES / Blocks / Logistics',
   icon: 'carousel',
   props: {
     className: Style(),

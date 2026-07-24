@@ -6,7 +6,7 @@ import { LogisticsCardClient } from './client';
 
 runtime.registerComponent(LogisticsCardClient, {
   type: 'ges-logistics-card',
-  label: 'GES / Logistics Card',
+  label: 'GES / Cards / Logistics',
   icon: 'carousel',
   props: {
     className: Style(),

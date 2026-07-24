@@ -6,7 +6,7 @@ import { GesSiteHeaderClient } from './client';
 
 runtime.registerComponent(GesSiteHeaderClient, {
   type: 'ges-site-header',
-  label: 'GES / Site Header',
+  label: 'GES / Navigation / Site Header',
   icon: 'layout',
   props: {
     className: Style(),

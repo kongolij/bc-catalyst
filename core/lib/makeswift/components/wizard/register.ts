@@ -6,7 +6,7 @@ import { WizardLanding } from './client';
 
 runtime.registerComponent(WizardLanding, {
   type: 'wizard-product-page',
-  label: 'GES / Wizard Product Page',
+  label: 'GES / Pages / Wizard Product',
   icon: 'layout',
   hidden: true,
   props: {

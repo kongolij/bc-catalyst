@@ -48,12 +48,16 @@ async function fetchApiTopLevelOptions(query: string) {
 
 runtime.registerComponent(GesCategoryGridOverrideClient, {
   type: 'ges-category-grid-override',
-  label: 'GES / Category Grid (Override)',
+  label: 'GES / Grids / Category (Override)',
   icon: 'gallery',
   props: {
     className: Style(),
     disableApi: Checkbox({
       label: 'Disable API (manual entries + dropped cards only)',
+      defaultValue: false,
+    }),
+    showDataDiagnostics: Checkbox({
+      label: 'Show API/override diagnostics',
       defaultValue: false,
     }),
     apiFilter: Select({

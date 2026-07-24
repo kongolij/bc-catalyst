@@ -74,7 +74,7 @@ const keyDatesAndTimesControl = Group({
 
 runtime.registerComponent(MoveInClient, {
   type: 'move-in-page',
-  label: 'GES / Move In Page',
+  label: 'GES / Pages / Move In',
   icon: 'layout',
   hidden: true,
   props: {

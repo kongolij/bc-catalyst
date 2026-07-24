@@ -15,7 +15,7 @@ import { GesImportantDatesClient } from './client';
 
 runtime.registerComponent(GesImportantDatesClient, {
   type: 'ges-important-dates',
-  label: 'GES / Important Dates',
+  label: 'GES / Blocks / Important Dates',
   icon: 'text',
   props: {
     className: Style(),

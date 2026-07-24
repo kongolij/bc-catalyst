@@ -6,7 +6,7 @@ import { PrintButton } from './client';
 
 runtime.registerComponent(PrintButton, {
   type: 'print-button',
-  label: 'GES / Print Button',
+  label: 'GES / Buttons / Print',
   props: {
     className: Style(),
   },

@@ -6,7 +6,7 @@ import { GesShippingLinksClient } from './client';
 
 runtime.registerComponent(GesShippingLinksClient, {
   type: 'ges-shipping-links',
-  label: 'GES / Shipping & Material Handling',
+  label: 'GES / Blocks / Shipping Links',
   icon: 'text',
   props: {
     className: Style(),

@@ -6,7 +6,7 @@ import { GesResourcesLinksClient } from './client';
 
 runtime.registerComponent(GesResourcesLinksClient, {
   type: 'ges-resources-links',
-  label: 'GES / Resources and Information',
+  label: 'GES / Blocks / Resources Links',
   icon: 'text',
   props: {
     className: Style(),

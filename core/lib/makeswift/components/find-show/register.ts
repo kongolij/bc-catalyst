@@ -6,7 +6,7 @@ import { FindShow } from './client';
 
 runtime.registerComponent(FindShow, {
   type: 'find-show',
-  label: 'GES / Find Show',
+  label: 'GES / Navigation / Find Show',
   props: {
     events: List({
       label: 'Events',

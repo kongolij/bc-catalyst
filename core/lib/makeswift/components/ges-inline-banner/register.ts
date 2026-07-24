@@ -6,7 +6,7 @@ import { GesInlineBannerClient } from './client';
 
 runtime.registerComponent(GesInlineBannerClient, {
   type: 'ges-inline-banner',
-  label: 'GES / Inline Banner',
+  label: 'GES / Banners / Inline',
   icon: 'text',
   props: {
     className: Style(),

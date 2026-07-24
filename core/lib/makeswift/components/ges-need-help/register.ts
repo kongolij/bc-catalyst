@@ -6,7 +6,7 @@ import { GesNeedHelpClient } from './client';
 
 runtime.registerComponent(GesNeedHelpClient, {
   type: 'ges-need-help',
-  label: 'GES / Need Help',
+  label: 'GES / Blocks / Need Help',
   icon: 'text',
   props: {
     className: Style(),

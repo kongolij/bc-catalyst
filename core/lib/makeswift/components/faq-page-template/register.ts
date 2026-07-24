@@ -13,7 +13,7 @@ const optionalSlot = () =>
 
 runtime.registerComponent(FaqPageTemplate, {
   type: 'ges-faq-page-template',
-  label: 'GES / FAQ Page Template',
+  label: 'GES / Pages / FAQ Template',
   icon: 'carousel',
   props: {
     className: Style(),

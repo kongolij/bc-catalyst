@@ -6,7 +6,7 @@ import { AddressCardClient } from './client';
 
 runtime.registerComponent(AddressCardClient, {
   type: 'ges-address-card',
-  label: 'GES / Address Card',
+  label: 'GES / Cards / Address',
   icon: 'carousel',
   props: {
     className: Style(),

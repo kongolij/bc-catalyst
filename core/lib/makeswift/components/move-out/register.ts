@@ -112,7 +112,7 @@ const moveInNoticeOuterControl = Group({
 
 runtime.registerComponent(MoveOutClient, {
   type: 'move-out-page',
-  label: 'GES / Move Out Page',
+  label: 'GES / Pages / Move Out',
   icon: 'layout',
   hidden: true,
   props: {

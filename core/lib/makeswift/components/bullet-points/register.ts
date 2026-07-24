@@ -6,7 +6,7 @@ import { BulletPoints } from './client';
 
 runtime.registerComponent(BulletPoints, {
   type: 'bullet-points',
-  label: 'GES / Bullet Points',
+  label: 'GES / Primitives / Bullet Points',
   props: {
     className: Style(),
     items: List({

@@ -6,7 +6,7 @@ import { GesActionButtonClient } from './client';
 
 runtime.registerComponent(GesActionButtonClient, {
   type: 'ges-action-button',
-  label: 'GES / Action Button',
+  label: 'GES / Buttons / Action',
   icon: 'button',
   props: {
     className: Style(),

@@ -6,7 +6,7 @@ import { GesSelectableDatesClient } from './client';
 
 runtime.registerComponent(GesSelectableDatesClient, {
   type: 'ges-selectable-dates',
-  label: 'GES / Selectable Dates',
+  label: 'GES / Blocks / Selectable Dates',
   icon: 'carousel',
   props: {
     className: Style(),

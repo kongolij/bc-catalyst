@@ -6,7 +6,7 @@ import CustomBtn from './client';
 
 runtime.registerComponent(CustomBtn, {
   type: 'custom-btn',
-  label: 'GES / Custom Button',
+  label: 'GES / Buttons / Custom',
   props: {
     items: List({
       label: 'Links',

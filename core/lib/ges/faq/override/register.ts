@@ -69,7 +69,7 @@ async function fetchItemOptions(query: string) {
 
 runtime.registerComponent(GesFaqOverrideClient, {
   type: 'ges-faq-override',
-  label: 'GES / FAQ',
+  label: 'GES / FAQ / Main',
   icon: 'cube',
   props: {
     className: Style(),

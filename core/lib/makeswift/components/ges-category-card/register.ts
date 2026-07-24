@@ -6,7 +6,7 @@ import { GesCategoryCardClient } from './client';
 
 runtime.registerComponent(GesCategoryCardClient, {
   type: 'ges-category-card',
-  label: 'GES / Category Card',
+  label: 'GES / Cards / Category',
   icon: 'gallery',
   props: {
     className: Style(),

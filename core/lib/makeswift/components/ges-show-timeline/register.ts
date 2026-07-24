@@ -6,7 +6,7 @@ import { GesShowTimelineClient } from './client';
 
 runtime.registerComponent(GesShowTimelineClient, {
   type: 'ges-show-timeline',
-  label: 'GES / Show Timeline',
+  label: 'GES / Blocks / Show Timeline',
   icon: 'carousel',
   props: {
     className: Style(),

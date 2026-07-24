@@ -22,6 +22,7 @@ interface CuratedEntry {
 interface Props {
   className?: string;
   mode?: 'api' | 'curated' | 'manual';
+  apiFilter?: 'featured' | 'best-selling' | 'all';
   columns?: '2' | '3' | '4' | '5';
   gap?: string;
   limit?: string;
@@ -32,6 +33,7 @@ interface Props {
 export function GesCategoryGridClient({
   className,
   mode = 'api',
+  apiFilter = 'featured',
   columns = '4',
   gap = '16px',
   limit,
@@ -43,7 +45,14 @@ export function GesCategoryGridClient({
   useEffect(() => {
     if (mode !== 'api') return;
     let cancelled = false;
-    fetch('/api/bc/categories/top-level?filter=featured')
+    const overrideFilter =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('catGridFilter')
+        : null;
+    const effectiveFilter = overrideFilter ?? apiFilter;
+    const qs = effectiveFilter && effectiveFilter !== 'all' ? `?filter=${effectiveFilter}` : '';
+
+    fetch(`/api/bc/categories/top-level${qs}`)
       .then((r) => r.json())
       .then((data: { categories: TopLevelCategory[] }) => {
         if (!cancelled) setCats(data.categories ?? []);
@@ -55,7 +64,7 @@ export function GesCategoryGridClient({
     return () => {
       cancelled = true;
     };
-  }, [mode]);
+  }, [mode, apiFilter]);
 
   const gridProps = {
     className: ['ges-cat-grid', className].filter(Boolean).join(' '),

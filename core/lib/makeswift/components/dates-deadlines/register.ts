@@ -6,7 +6,7 @@ import { DatesDeadlinesClient } from './client';
 
 runtime.registerComponent(DatesDeadlinesClient, {
   type: 'ges-dates-deadlines',
-  label: 'GES / Dates & Deadlines',
+  label: 'GES / Blocks / Dates & Deadlines',
   icon: 'carousel',
   props: {
     className: Style(),

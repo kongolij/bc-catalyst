@@ -6,7 +6,7 @@ import { FaqComp } from './client';
 
 runtime.registerComponent(FaqComp, {
   type: 'faq-component',
-  label: "GES / FAQ's",
+  label: "GES / FAQ / Legacy",
   icon: 'cube',
   hidden: true,
   props: {

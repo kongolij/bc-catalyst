@@ -30,7 +30,7 @@ const bannerSectionControl = List({
 
 runtime.registerComponent(MegaBanner, {
   type: 'mega-banner',
-  label: 'GES / Mega Banner',
+  label: 'GES / Banners / Mega',
   icon: 'carousel',
   hidden: true,
   props: {

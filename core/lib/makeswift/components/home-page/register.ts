@@ -13,7 +13,7 @@ const optionalSlot = () =>
 
 runtime.registerComponent(MakeswiftHomePage, {
   type: 'ges-home-page-template',
-  label: 'GES / Home Page Template',
+  label: 'GES / Pages / Home Template',
   props: {
     top: optionalSlot(),
     afterHero: optionalSlot(),

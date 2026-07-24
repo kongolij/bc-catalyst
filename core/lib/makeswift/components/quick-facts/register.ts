@@ -46,7 +46,7 @@ const breadcrumbsDataControl = Group({
 
 runtime.registerComponent(QuickFactsClient, {
   type: 'quick-facts-page',
-  label: 'GES / Quick Facts Page',
+  label: 'GES / Pages / Quick Facts',
   icon: 'layout',
   hidden: true,
   props: {

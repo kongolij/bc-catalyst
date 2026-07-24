@@ -6,7 +6,7 @@ import { ShippingAddressesClient } from './client';
 
 runtime.registerComponent(ShippingAddressesClient, {
   type: 'ges-shipping-addresses',
-  label: 'GES / Shipping Addresses',
+  label: 'GES / Blocks / Shipping Addresses',
   icon: 'carousel',
   props: {
     className: Style(),

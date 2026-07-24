@@ -6,7 +6,7 @@ import { GesAccordionPage } from './client';
 
 runtime.registerComponent(GesAccordionPage, {
   type: 'primitive-accordions-page',
-  label: 'GES / Accordions Page',
+  label: 'GES / Pages / Accordions',
   icon: 'carousel',
   props: {
     className: Style(),

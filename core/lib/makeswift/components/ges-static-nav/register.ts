@@ -6,7 +6,7 @@ import { GesStaticNavClient } from './client';
 
 runtime.registerComponent(GesStaticNavClient, {
   type: 'ges-static-nav',
-  label: 'GES / Static Pages Nav',
+  label: 'GES / Navigation / Static Pages',
   icon: 'navigation',
   props: {
     className: Style(),

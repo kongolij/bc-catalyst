@@ -6,7 +6,7 @@ import { GesCategoryGridClient } from './client';
 
 runtime.registerComponent(GesCategoryGridClient, {
   type: 'ges-category-grid',
-  label: 'GES / Category Grid',
+  label: 'GES / Grids / Category',
   icon: 'gallery',
   props: {
     className: Style(),
@@ -18,6 +18,15 @@ runtime.registerComponent(GesCategoryGridClient, {
         { label: 'Manual (drop cards)', value: 'manual' },
       ],
       defaultValue: 'api',
+    }),
+    apiFilter: Select({
+      label: 'Auto filter (data source)',
+      options: [
+        { label: 'Featured', value: 'featured' },
+        { label: 'Best-Selling', value: 'best-selling' },
+        { label: 'All top-level', value: 'all' },
+      ],
+      defaultValue: 'featured',
     }),
     columns: Select({
       label: 'Columns (desktop)',

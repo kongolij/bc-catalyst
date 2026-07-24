@@ -40,10 +40,14 @@ async function fetchApiRowOptions(query: string) {
 
 runtime.registerComponent(GesImportantDatesOverrideClient, {
   type: 'ges-important-dates-override',
-  label: 'GES / Important Dates (Override)',
+  label: 'GES / Blocks / Important Dates (Override)',
   icon: 'text',
   props: {
     className: Style(),
+    showDataDiagnostics: Checkbox({
+      label: 'Show API/override diagnostics',
+      defaultValue: false,
+    }),
     title: TextInput({ label: 'Section title', defaultValue: 'Important Dates' }),
     countdownLabel: TextInput({
       label: 'Countdown label (uses {label} placeholder)',

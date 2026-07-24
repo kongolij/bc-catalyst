@@ -25,7 +25,7 @@ const importantDatesListControl = List({
 
 runtime.registerComponent(DateScheduleClient, {
   type: 'date-schedule-page',
-  label: 'GES / Date Schedule Page',
+  label: 'GES / Pages / Date Schedule',
   icon: 'layout',
   hidden: true,
   props: {

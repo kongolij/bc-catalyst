@@ -6,7 +6,7 @@ import { GesSplitBannerClient } from './client';
 
 runtime.registerComponent(GesSplitBannerClient, {
   type: 'ges-split-banner',
-  label: 'GES / Split Banner',
+  label: 'GES / Banners / Split',
   icon: 'carousel',
   props: {
     className: Style(),
