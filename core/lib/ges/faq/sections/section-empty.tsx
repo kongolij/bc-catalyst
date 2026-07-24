@@ -95,12 +95,12 @@ function Chevron() {
   return (
     <svg
       className="[&>line]:origin-center [&>line]:transition [&>line]:duration-300 [&>line]:ease-out"
-      height={16}
-      stroke="#c8d629"
-      strokeWidth={1.5}
-      style={{ flexShrink: 0, marginTop: 4 }}
+      height={18}
+      stroke="#E06A26"
+      strokeWidth={1.8}
+      style={{ flexShrink: 0, marginTop: 6 }}
       viewBox="0 0 10 10"
-      width={16}
+      width={18}
     >
       <line
         className="group-data-[state=open]:-translate-y-[3px] group-data-[state=open]:-rotate-90"
@@ -123,26 +123,33 @@ function Chevron() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  wrap: { marginBottom: 24 },
-  title: { fontSize: 22, fontWeight: 600, marginBottom: 16, color: '#0a2540' },
-  item: { borderBottom: '1px solid #e5e5e5' },
+  wrap: { marginBottom: 32 },
+  title: { fontSize: 28, fontWeight: 700, marginBottom: 20, color: '#0a2540' },
+  item: { borderBottom: '1px solid #e5e7eb' },
   trigger: {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     width: '100%',
-    padding: '14px 0',
+    padding: '18px 0',
     background: 'transparent',
     border: 'none',
     textAlign: 'left',
     cursor: 'pointer',
     gap: 24,
-    fontSize: 15,
-    fontWeight: 500,
+    fontSize: 16,
+    fontWeight: 600,
+    color: '#0a2540',
   },
   q: { flex: 1 },
   content: { overflow: 'hidden' },
-  a: { padding: '0 0 16px', color: '#333', lineHeight: 1.5, whiteSpace: 'pre-wrap' },
+  a: {
+    padding: '4px 0 20px',
+    color: '#4b5563',
+    lineHeight: 1.6,
+    fontSize: 15,
+    whiteSpace: 'pre-wrap',
+  },
   muted: { color: '#888', fontSize: 14, fontStyle: 'italic' },
   editorBadge: {
     fontSize: 11,
