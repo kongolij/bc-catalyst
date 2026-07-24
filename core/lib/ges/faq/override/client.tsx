@@ -31,6 +31,18 @@ interface CategoryDisplayOverride {
   sortOverride?: string;
 }
 
+interface ItemOverride {
+  matchId?: ComboValue;
+  questionOverride?: string;
+  answerOverride?: string;
+}
+
+interface AdditionalItem {
+  categoryId?: ComboValue;
+  question?: string;
+  answer?: string;
+}
+
 interface Props {
   className?: string;
   title?: string;
@@ -42,6 +54,9 @@ interface Props {
   showCounts?: boolean;
   syncToUrl?: boolean;
   hiddenCategoryIds?: HiddenId[];
+  hiddenItemIds?: HiddenId[];
+  itemOverrides?: ItemOverride[];
+  additionalItems?: AdditionalItem[];
   categoryDisplay?: CategoryDisplayOverride[];
 }
 
@@ -103,6 +118,9 @@ function FaqShell({
   clearLabel = '× Clear Filter',
   showCounts = true,
   hiddenCategoryIds,
+  hiddenItemIds,
+  itemOverrides,
+  additionalItems,
   categoryDisplay,
   activeId,
   setActiveId,
@@ -144,15 +162,55 @@ function FaqShell({
       .filter((c) => !hidden.has(c.id))
       .map((c) => {
         const override = overridesById.get(c.id);
-        if (!override) return c;
-        const labelNext = override.labelOverride?.trim() ? override.labelOverride : c.title;
-        const sortNext = override.sortOverride?.trim()
+        const labelNext = override?.labelOverride?.trim() ? override.labelOverride : c.title;
+        const sortNext = override?.sortOverride?.trim()
           ? Number(override.sortOverride) || c.sortOrder
           : c.sortOrder;
         return { ...c, title: labelNext, sortOrder: sortNext };
       })
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [apiCategories, hiddenCategoryIds, categoryDisplay]);
+
+  const effectiveItems = useMemo<ApiItem[]>(() => {
+    const hidden = new Set(
+      (hiddenItemIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
+    );
+    const overridesById = new Map<string, ItemOverride>();
+    (itemOverrides ?? []).forEach((o) => {
+      const key = comboToString(o.matchId);
+      if (key) overridesById.set(key, o);
+    });
+
+    const merged: ApiItem[] = apiItems
+      .filter((i) => !hidden.has(i.id))
+      .map((i) => {
+        const o = overridesById.get(i.id);
+        if (!o) return i;
+        const q = o.questionOverride?.trim() ? o.questionOverride : i.question;
+        const a = o.answerOverride?.trim() ? o.answerOverride : i.answer;
+        return { ...i, question: q, answer: a };
+      });
+
+    (additionalItems ?? []).forEach((n, idx) => {
+      const catId = comboToString(n.categoryId);
+      const q = (n.question ?? '').trim();
+      if (!catId || !q) return;
+      merged.push({
+        id: `custom-${catId}-${idx}`,
+        categoryId: catId,
+        question: q,
+        answer: n.answer ?? '',
+      });
+    });
+
+    return merged;
+  }, [apiItems, hiddenItemIds, itemOverrides, additionalItems]);
+
+  const effectiveCountByCategory = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const i of effectiveItems) m.set(i.categoryId, (m.get(i.categoryId) ?? 0) + 1);
+    return m;
+  }, [effectiveItems]);
 
   const defaultId = comboToString(defaultCategoryId) || null;
   // Blank default => right side stays as a placeholder until the user picks a filter.
@@ -161,8 +219,9 @@ function FaqShell({
     ? visibleCategories.find((c) => c.id === effectiveId) ?? null
     : null;
   const activeItems = useMemo(
-    () => (activeCategory ? apiItems.filter((i) => i.categoryId === activeCategory.id) : []),
-    [apiItems, activeCategory],
+    () =>
+      activeCategory ? effectiveItems.filter((i) => i.categoryId === activeCategory.id) : [],
+    [effectiveItems, activeCategory],
   );
 
   const isFiltered = activeId !== null;
@@ -197,7 +256,9 @@ function FaqShell({
                     />
                     <span style={styles.catText}>{c.title}</span>
                   </label>
-                  {showCounts ? <span style={styles.count}>{c.count}</span> : null}
+                  {showCounts ? (
+                    <span style={styles.count}>{effectiveCountByCategory.get(c.id) ?? c.count}</span>
+                  ) : null}
                 </li>
               );
             })}
