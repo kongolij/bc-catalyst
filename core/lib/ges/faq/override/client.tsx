@@ -13,6 +13,7 @@ interface ApiCategory {
   title: string;
   count: number;
   sortOrder: number;
+  isCustom?: boolean;
 }
 
 interface ApiItem {
@@ -46,6 +47,12 @@ interface AdditionalItem {
   answer?: string;
 }
 
+interface CustomSidebarEntry {
+  label?: string;
+  slug?: string;
+  sortOrder?: string;
+}
+
 interface Props {
   className?: string;
   title?: string;
@@ -61,6 +68,7 @@ interface Props {
   itemOverrides?: ItemOverride[];
   additionalItems?: AdditionalItem[];
   categoryDisplay?: CategoryDisplayOverride[];
+  customSidebarEntries?: CustomSidebarEntry[];
   children?: ReactNode;
 }
 
@@ -126,6 +134,7 @@ function FaqShell({
   itemOverrides,
   additionalItems,
   categoryDisplay,
+  customSidebarEntries,
   children,
   activeId,
   setActiveId,
@@ -164,7 +173,7 @@ function FaqShell({
       if (key) overridesById.set(key, o);
     });
 
-    return apiCategories
+    const fromApi = apiCategories
       .filter((c) => !hidden.has(c.id))
       .map((c) => {
         const override = overridesById.get(c.id);
@@ -173,9 +182,26 @@ function FaqShell({
           ? Number(override.sortOverride) || c.sortOrder
           : c.sortOrder;
         return { ...c, title: labelNext, sortOrder: sortNext };
+      });
+
+    const custom = (customSidebarEntries ?? [])
+      .map<ApiCategory | null>((e) => {
+        const slug = (e.slug ?? '').trim();
+        const label = (e.label ?? '').trim();
+        if (!slug || !label) return null;
+        const parsed = Number((e.sortOrder ?? '').trim());
+        return {
+          id: slug,
+          title: label,
+          count: 0,
+          sortOrder: Number.isFinite(parsed) && parsed > 0 ? parsed : 999,
+          isCustom: true,
+        };
       })
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [apiCategories, hiddenCategoryIds, categoryDisplay]);
+      .filter((c): c is ApiCategory => c !== null);
+
+    return [...fromApi, ...custom].sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [apiCategories, hiddenCategoryIds, categoryDisplay, customSidebarEntries]);
 
   const effectiveItems = useMemo<ApiItem[]>(() => {
     const hidden = new Set(
@@ -262,7 +288,7 @@ function FaqShell({
                     />
                     <span style={styles.catText}>{c.title}</span>
                   </label>
-                  {showCounts ? (
+                  {showCounts && !c.isCustom ? (
                     <span style={styles.count}>{effectiveCountByCategory.get(c.id) ?? c.count}</span>
                   ) : null}
                 </li>

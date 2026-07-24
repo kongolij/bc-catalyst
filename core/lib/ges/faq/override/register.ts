@@ -169,6 +169,25 @@ runtime.registerComponent(GesFaqOverrideClient, {
       getItemLabel: (i) => i?.question || 'New FAQ item',
     }),
 
+    customSidebarEntries: List({
+      label: 'Add custom sidebar filters (link a slug to a New FAQ (Blank) section)',
+      type: Group({
+        label: 'Custom filter',
+        props: {
+          label: TextInput({ label: 'Sidebar label (shown to visitors)', defaultValue: '' }),
+          slug: TextInput({
+            label: 'Filter slug (must match the slug on the New FAQ section)',
+            defaultValue: '',
+          }),
+          sortOrder: TextInput({
+            label: 'Sort order (lower = higher up; blank = 999)',
+            defaultValue: '',
+          }),
+        },
+      }),
+      getItemLabel: (e) => e?.label || e?.slug || 'Custom filter',
+    }),
+
     categoryDisplay: List({
       label: 'Rename / reorder categories (sidebar only — content is unchanged)',
       type: Group({
