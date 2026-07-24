@@ -2,7 +2,7 @@
 
 import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useFaqSectionContext } from './context';
 
@@ -55,8 +55,10 @@ export function FaqSection({
   overrides,
   additionalItems,
 }: Props) {
-  const { activeSlug } = useFaqSectionContext();
+  const { activeSlug, registerSlug } = useFaqSectionContext();
   const isInBuilder = useIsInBuilder();
+
+  useEffect(() => registerSlug(categorySlug), [categorySlug, registerSlug]);
 
   const items = useMemo(() => {
     const hidden = new Set(

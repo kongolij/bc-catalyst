@@ -4,7 +4,16 @@ import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { clsx } from 'clsx';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Children, ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Children,
+  ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { FaqSectionContext } from '../sections/context';
 
@@ -258,6 +267,71 @@ function FaqShell({
 
   const isFiltered = activeId !== null;
 
+  const [claimedSlugs, setClaimedSlugs] = useState<Set<string>>(() => new Set());
+  const claimedRef = useRef(claimedSlugs);
+  claimedRef.current = claimedSlugs;
+
+  const registerSlug = useCallback((slug: string) => {
+    if (!slug) return () => undefined;
+    setClaimedSlugs((prev) => {
+      if (prev.has(slug)) return prev;
+      const next = new Set(prev);
+      next.add(slug);
+      return next;
+    });
+    return () => {
+      setClaimedSlugs((prev) => {
+        if (!prev.has(slug)) return prev;
+        const next = new Set(prev);
+        next.delete(slug);
+        return next;
+      });
+    };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ activeSlug: effectiveId, registerSlug }),
+    [effectiveId, registerSlug],
+  );
+
+  const shouldRenderApiFallback =
+    !!activeCategory && !claimedSlugs.has(activeCategory.id) && !activeCategory.isCustom;
+
+  const apiAccordion = activeCategory ? (
+    <>
+      <h2 style={styles.sectionTitle}>{activeCategory.title}</h2>
+      {activeItems.length === 0 ? (
+        <p style={styles.muted}>No FAQs in this category.</p>
+      ) : (
+        <AccordionPrimitive.Root
+          defaultValue={isInBuilder ? activeItems.map((i) => i.id) : undefined}
+          type="multiple"
+        >
+          {activeItems.map((item) => (
+            <AccordionPrimitive.Item key={item.id} style={styles.accItem} value={item.id}>
+              <AccordionPrimitive.Header>
+                <AccordionPrimitive.Trigger style={styles.accTrigger}>
+                  <span style={styles.accQuestion}>{item.question}</span>
+                  <Chevron />
+                </AccordionPrimitive.Trigger>
+              </AccordionPrimitive.Header>
+              <AccordionPrimitive.Content style={styles.accContent}>
+                <div style={styles.accAnswer}>{item.answer}</div>
+              </AccordionPrimitive.Content>
+            </AccordionPrimitive.Item>
+          ))}
+        </AccordionPrimitive.Root>
+      )}
+    </>
+  ) : null;
+
+  const emptyState = (
+    <div style={styles.emptyState}>
+      <h2 style={styles.emptyTitle}>{emptyStateTitle}</h2>
+      <p style={styles.emptyMessage}>{emptyStateMessage}</p>
+    </div>
+  );
+
   return (
     <section className={clsx('ges-faq', className)} style={styles.wrap}>
       <h1 style={styles.pageTitle}>{title}</h1>
@@ -299,50 +373,14 @@ function FaqShell({
 
         <div style={styles.content}>
           {Children.count(children) > 0 ? (
-            <FaqSectionContext.Provider value={{ activeSlug: effectiveId }}>
+            <FaqSectionContext.Provider value={contextValue}>
               {children}
-              {!effectiveId ? (
-                <div style={styles.emptyState}>
-                  <h2 style={styles.emptyTitle}>{emptyStateTitle}</h2>
-                  <p style={styles.emptyMessage}>{emptyStateMessage}</p>
-                </div>
-              ) : null}
+              {effectiveId ? (shouldRenderApiFallback ? apiAccordion : null) : emptyState}
             </FaqSectionContext.Provider>
           ) : activeCategory ? (
-            <>
-              <h2 style={styles.sectionTitle}>{activeCategory.title}</h2>
-              {activeItems.length === 0 ? (
-                <p style={styles.muted}>No FAQs in this category.</p>
-              ) : (
-                <AccordionPrimitive.Root
-                  defaultValue={isInBuilder ? activeItems.map((i) => i.id) : undefined}
-                  type="multiple"
-                >
-                  {activeItems.map((item) => (
-                    <AccordionPrimitive.Item
-                      key={item.id}
-                      style={styles.accItem}
-                      value={item.id}
-                    >
-                      <AccordionPrimitive.Header>
-                        <AccordionPrimitive.Trigger style={styles.accTrigger}>
-                          <span style={styles.accQuestion}>{item.question}</span>
-                          <Chevron />
-                        </AccordionPrimitive.Trigger>
-                      </AccordionPrimitive.Header>
-                      <AccordionPrimitive.Content style={styles.accContent}>
-                        <div style={styles.accAnswer}>{item.answer}</div>
-                      </AccordionPrimitive.Content>
-                    </AccordionPrimitive.Item>
-                  ))}
-                </AccordionPrimitive.Root>
-              )}
-            </>
+            apiAccordion
           ) : (
-            <div style={styles.emptyState}>
-              <h2 style={styles.emptyTitle}>{emptyStateTitle}</h2>
-              <p style={styles.emptyMessage}>{emptyStateMessage}</p>
-            </div>
+            emptyState
           )}
         </div>
       </div>

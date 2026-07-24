@@ -2,6 +2,7 @@
 
 import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
+import { useEffect } from 'react';
 
 import { useFaqSectionContext } from './context';
 
@@ -25,9 +26,11 @@ function slugify(s: string): string {
 }
 
 export function FaqSectionEmpty({ title = 'New FAQ', categorySlug, items = [] }: Props) {
-  const { activeSlug } = useFaqSectionContext();
+  const { activeSlug, registerSlug } = useFaqSectionContext();
   const isInBuilder = useIsInBuilder();
   const slug = (categorySlug?.trim() || slugify(title) || 'new-faq').toLowerCase();
+
+  useEffect(() => registerSlug(slug), [slug, registerSlug]);
 
   const filterActive = activeSlug !== null;
 
