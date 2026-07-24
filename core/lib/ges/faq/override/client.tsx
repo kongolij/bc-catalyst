@@ -1,5 +1,6 @@
 'use client';
 
+import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { clsx } from 'clsx';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -129,6 +130,7 @@ function FaqShell({
   activeId,
   setActiveId,
 }: ShellProps) {
+  const isInBuilder = useIsInBuilder();
   const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
   const [apiItems, setApiItems] = useState<ApiItem[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -286,7 +288,10 @@ function FaqShell({
               {activeItems.length === 0 ? (
                 <p style={styles.muted}>No FAQs in this category.</p>
               ) : (
-                <AccordionPrimitive.Root type="multiple">
+                <AccordionPrimitive.Root
+                  defaultValue={isInBuilder ? activeItems.map((i) => i.id) : undefined}
+                  type="multiple"
+                >
                   {activeItems.map((item) => (
                     <AccordionPrimitive.Item
                       key={item.id}

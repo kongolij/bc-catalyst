@@ -2,7 +2,7 @@
 
 import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { useId, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useFaqSectionContext } from './context';
 
@@ -108,9 +108,12 @@ export function FaqSection({
       {items.length === 0 ? (
         <p style={styles.muted}>No items — every item has been hidden.</p>
       ) : (
-        <AccordionPrimitive.Root type="multiple">
+        <AccordionPrimitive.Root
+          defaultValue={isInBuilder ? items.map((it) => it.id) : undefined}
+          type="multiple"
+        >
           {items.map((it) => (
-            <AccordionRow answer={it.answer} key={it.id} question={it.question} />
+            <AccordionRow answer={it.answer} itemId={it.id} key={it.id} question={it.question} />
           ))}
         </AccordionPrimitive.Root>
       )}
@@ -118,10 +121,17 @@ export function FaqSection({
   );
 }
 
-function AccordionRow({ question, answer }: { question: string; answer: string }) {
-  const value = useId();
+function AccordionRow({
+  itemId,
+  question,
+  answer,
+}: {
+  itemId: string;
+  question: string;
+  answer: string;
+}) {
   return (
-    <AccordionPrimitive.Item style={styles.item} value={value}>
+    <AccordionPrimitive.Item style={styles.item} value={itemId}>
       <AccordionPrimitive.Header>
         <AccordionPrimitive.Trigger style={styles.trigger}>
           <span style={styles.q}>{question || 'Untitled question'}</span>

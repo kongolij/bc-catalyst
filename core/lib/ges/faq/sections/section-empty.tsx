@@ -2,7 +2,6 @@
 
 import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { useId } from 'react';
 
 import { useFaqSectionContext } from './context';
 
@@ -50,9 +49,17 @@ export function FaqSectionEmpty({ title = 'New FAQ', categorySlug, items = [] }:
           Empty — add rows in the props panel to create your custom FAQ section.
         </p>
       ) : (
-        <AccordionPrimitive.Root type="multiple">
+        <AccordionPrimitive.Root
+          defaultValue={isInBuilder ? items.map((_, idx) => `row-${idx}`) : undefined}
+          type="multiple"
+        >
           {items.map((it, idx) => (
-            <AccordionRow answer={it.answer ?? ''} key={idx} question={it.question ?? ''} />
+            <AccordionRow
+              answer={it.answer ?? ''}
+              itemId={`row-${idx}`}
+              key={idx}
+              question={it.question ?? ''}
+            />
           ))}
         </AccordionPrimitive.Root>
       )}
@@ -60,10 +67,17 @@ export function FaqSectionEmpty({ title = 'New FAQ', categorySlug, items = [] }:
   );
 }
 
-function AccordionRow({ question, answer }: { question: string; answer: string }) {
-  const value = useId();
+function AccordionRow({
+  itemId,
+  question,
+  answer,
+}: {
+  itemId: string;
+  question: string;
+  answer: string;
+}) {
   return (
-    <AccordionPrimitive.Item style={styles.item} value={value}>
+    <AccordionPrimitive.Item style={styles.item} value={itemId}>
       <AccordionPrimitive.Header>
         <AccordionPrimitive.Trigger style={styles.trigger}>
           <span style={styles.q}>{question || 'Untitled question'}</span>
