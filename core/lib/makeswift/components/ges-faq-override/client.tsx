@@ -25,25 +25,6 @@ interface HiddenId {
   id?: ComboValue;
 }
 
-interface CategoryOverride {
-  matchId?: ComboValue;
-  titleOverride?: string;
-  sortOrder?: string;
-}
-
-interface ItemOverride {
-  matchId?: ComboValue;
-  categoryIdOverride?: ComboValue;
-  questionOverride?: string;
-  answerOverride?: string;
-}
-
-interface AdditionalItem {
-  categoryId?: ComboValue;
-  question?: string;
-  answer?: string;
-}
-
 interface Props {
   className?: string;
   title?: string;
@@ -51,24 +32,7 @@ interface Props {
   clearLabel?: string;
   showCounts?: boolean;
   syncToUrl?: boolean;
-  showDataDiagnostics?: boolean;
   hiddenCategoryIds?: HiddenId[];
-  categoryOverrides?: CategoryOverride[];
-  hiddenItemIds?: HiddenId[];
-  itemOverrides?: ItemOverride[];
-  additionalItems?: AdditionalItem[];
-}
-
-type Provenance = 'api' | 'api-with-override' | 'local';
-
-interface MergedCategory extends ApiCategory {
-  provenance: Provenance;
-  overriddenFields: string[];
-}
-
-interface MergedItem extends ApiItem {
-  provenance: Provenance;
-  overriddenFields: string[];
 }
 
 function comboToString(v: ComboValue): string {
@@ -78,10 +42,6 @@ function comboToString(v: ComboValue): string {
     return typeof raw === 'string' ? raw.trim() : '';
   }
   return '';
-}
-
-function pickString(override?: string, fallback?: string): string {
-  return override?.trim() ? override : (fallback ?? '');
 }
 
 export function GesFaqOverrideClient(props: Props) {
@@ -129,12 +89,7 @@ function FaqShell({
   defaultCategoryId,
   clearLabel = '× Clear Filter',
   showCounts = true,
-  showDataDiagnostics = false,
   hiddenCategoryIds,
-  categoryOverrides,
-  hiddenItemIds,
-  itemOverrides,
-  additionalItems,
   activeId,
   setActiveId,
 }: ShellProps) {
@@ -161,94 +116,20 @@ function FaqShell({
     };
   }, []);
 
-  const mergedCategories = useMemo<MergedCategory[]>(() => {
+  const visibleCategories = useMemo(() => {
     const hidden = new Set(
       (hiddenCategoryIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
     );
-    const overridesById = new Map<string, CategoryOverride>();
-    (categoryOverrides ?? []).forEach((o) => {
-      const key = comboToString(o.matchId);
-      if (key) overridesById.set(key, o);
-    });
+    return apiCategories.filter((c) => !hidden.has(c.id)).sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [apiCategories, hiddenCategoryIds]);
 
-    return apiCategories
-      .filter((c) => !hidden.has(c.id))
-      .map<MergedCategory>((c) => {
-        const override = overridesById.get(c.id);
-        if (!override) return { ...c, provenance: 'api', overriddenFields: [] };
-        const overriddenFields: string[] = [];
-        const titleNext = pickString(override.titleOverride, c.title);
-        if (override.titleOverride?.trim()) overriddenFields.push('title');
-        const sortNext = override.sortOrder?.trim()
-          ? Number(override.sortOrder) || c.sortOrder
-          : c.sortOrder;
-        if (override.sortOrder?.trim()) overriddenFields.push('sortOrder');
-        return {
-          ...c,
-          title: titleNext,
-          sortOrder: sortNext,
-          provenance: 'api-with-override',
-          overriddenFields,
-        };
-      })
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [apiCategories, hiddenCategoryIds, categoryOverrides]);
-
-  const mergedItems = useMemo<MergedItem[]>(() => {
-    const hidden = new Set((hiddenItemIds ?? []).map((h) => comboToString(h.id)).filter(Boolean));
-    const overridesById = new Map<string, ItemOverride>();
-    (itemOverrides ?? []).forEach((o) => {
-      const key = comboToString(o.matchId);
-      if (key) overridesById.set(key, o);
-    });
-
-    const kept: MergedItem[] = apiItems
-      .filter((i) => !hidden.has(i.id))
-      .map<MergedItem>((i) => {
-        const override = overridesById.get(i.id);
-        if (!override) return { ...i, provenance: 'api', overriddenFields: [] };
-        const overriddenFields: string[] = [];
-        const categoryIdNext = comboToString(override.categoryIdOverride) || i.categoryId;
-        if (comboToString(override.categoryIdOverride)) overriddenFields.push('categoryId');
-        const questionNext = pickString(override.questionOverride, i.question);
-        if (override.questionOverride?.trim()) overriddenFields.push('question');
-        const answerNext = pickString(override.answerOverride, i.answer);
-        if (override.answerOverride?.trim()) overriddenFields.push('answer');
-        return {
-          ...i,
-          categoryId: categoryIdNext,
-          question: questionNext,
-          answer: answerNext,
-          provenance: 'api-with-override',
-          overriddenFields,
-        };
-      });
-
-    const additions: MergedItem[] = (additionalItems ?? [])
-      .map((row, index) => {
-        const catId = comboToString(row.categoryId);
-        const question = (row.question ?? '').trim();
-        if (!catId || !question) return null;
-        return {
-          id: `local-${catId}-${index}`,
-          categoryId: catId,
-          question,
-          answer: row.answer ?? '',
-          provenance: 'local' as Provenance,
-          overriddenFields: [],
-        };
-      })
-      .filter((x): x is MergedItem => x !== null);
-
-    return [...kept, ...additions];
-  }, [apiItems, hiddenItemIds, itemOverrides, additionalItems]);
-
-  const defaultId = comboToString(defaultCategoryId) || mergedCategories[0]?.id || null;
+  const defaultId = comboToString(defaultCategoryId) || visibleCategories[0]?.id || null;
   const effectiveId = activeId ?? defaultId;
-  const activeCategory = mergedCategories.find((c) => c.id === effectiveId) ?? mergedCategories[0];
+  const activeCategory =
+    visibleCategories.find((c) => c.id === effectiveId) ?? visibleCategories[0];
   const activeItems = useMemo(
-    () => mergedItems.filter((i) => i.categoryId === activeCategory?.id),
-    [mergedItems, activeCategory?.id],
+    () => apiItems.filter((i) => i.categoryId === activeCategory?.id),
+    [apiItems, activeCategory?.id],
   );
 
   const isFiltered = activeId !== null && activeId !== defaultId;
@@ -268,10 +149,10 @@ function FaqShell({
             ) : null}
           </div>
           <ul style={styles.catList}>
-            {!loaded && mergedCategories.length === 0 ? (
+            {!loaded && visibleCategories.length === 0 ? (
               <li style={styles.muted}>Loading…</li>
             ) : null}
-            {mergedCategories.map((c) => {
+            {visibleCategories.map((c) => {
               const checked = effectiveId === c.id;
               return (
                 <li key={c.id} style={styles.catRow}>
@@ -312,18 +193,6 @@ function FaqShell({
                       </AccordionPrimitive.Header>
                       <AccordionPrimitive.Content style={styles.accContent}>
                         <div style={styles.accAnswer}>{item.answer}</div>
-                        {showDataDiagnostics ? (
-                          <div style={styles.diagnostic}>
-                            <span data-provenance={item.provenance}>
-                              {item.provenance === 'api'
-                                ? 'API'
-                                : item.provenance === 'api-with-override'
-                                  ? `API + override (${item.overriddenFields.join(', ')})`
-                                  : 'Local addition'}
-                            </span>
-                            <small style={{ marginLeft: 8, color: '#888' }}>id: {item.id}</small>
-                          </div>
-                        ) : null}
                       </AccordionPrimitive.Content>
                     </AccordionPrimitive.Item>
                   ))}
@@ -426,14 +295,5 @@ const styles: Record<string, React.CSSProperties> = {
   accQuestion: { flex: 1 },
   accContent: { overflow: 'hidden' },
   accAnswer: { padding: '0 0 16px', color: '#333', lineHeight: 1.5 },
-  diagnostic: {
-    fontSize: 11,
-    color: '#666',
-    background: '#f5f5f5',
-    padding: '4px 8px',
-    borderRadius: 4,
-    marginBottom: 12,
-    display: 'inline-block',
-  },
   muted: { color: '#888', fontSize: 14 },
 };
