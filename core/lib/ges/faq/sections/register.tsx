@@ -5,6 +5,7 @@ import { runtime } from '~/lib/makeswift/runtime';
 import { FAQ_CATEGORY_FILES } from '../data';
 
 import { FaqSection } from './section';
+import { FaqSectionEmpty } from './section-empty';
 
 type ComboValue = string | { value?: string; id?: string } | undefined;
 
@@ -107,3 +108,28 @@ for (const file of FAQ_CATEGORY_FILES) {
     },
   });
 }
+
+// Blank section — no prepopulated content, merchandiser fills it in from scratch.
+runtime.registerComponent(FaqSectionEmpty, {
+  type: 'ges-faq-section-blank',
+  label: 'GES / FAQ / Sections / New FAQ (Blank)',
+  icon: 'cube',
+  props: {
+    title: TextInput({ label: 'Section title', defaultValue: 'New FAQ' }),
+    categorySlug: TextInput({
+      label: 'Filter slug (leave blank to derive from title; must match a sidebar filter to be shown on click)',
+      defaultValue: '',
+    }),
+    items: List({
+      label: 'FAQ items (starts empty — add your own)',
+      type: Group({
+        label: 'FAQ item',
+        props: {
+          question: TextInput({ label: 'Question', defaultValue: '' }),
+          answer: TextArea({ label: 'Answer', defaultValue: '' }),
+        },
+      }),
+      getItemLabel: (i) => i?.question || 'New question',
+    }),
+  },
+});
