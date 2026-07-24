@@ -3,6 +3,7 @@ import {
   Combobox,
   Group,
   List,
+  Slot,
   Style,
   TextArea,
   TextInput,
@@ -74,6 +75,9 @@ runtime.registerComponent(GesFaqOverrideClient, {
   props: {
     className: Style(),
     title: TextInput({ label: 'Page title', defaultValue: 'Frequently Asked Questions' }),
+
+    // Right panel content — drop FAQ Section blocks in here to override the API-driven view
+    children: Slot(),
 
     // --- Right-panel behavior ---
     defaultCategoryId: Combobox({

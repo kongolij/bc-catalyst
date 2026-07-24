@@ -3,7 +3,9 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { clsx } from 'clsx';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Children, ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+
+import { FaqSectionContext } from '../sections/context';
 
 interface ApiCategory {
   id: string;
@@ -58,6 +60,7 @@ interface Props {
   itemOverrides?: ItemOverride[];
   additionalItems?: AdditionalItem[];
   categoryDisplay?: CategoryDisplayOverride[];
+  children?: ReactNode;
 }
 
 function comboToString(v: ComboValue): string {
@@ -122,6 +125,7 @@ function FaqShell({
   itemOverrides,
   additionalItems,
   categoryDisplay,
+  children,
   activeId,
   setActiveId,
 }: ShellProps) {
@@ -266,7 +270,17 @@ function FaqShell({
         </aside>
 
         <div style={styles.content}>
-          {activeCategory ? (
+          {Children.count(children) > 0 ? (
+            <FaqSectionContext.Provider value={{ activeSlug: effectiveId }}>
+              {children}
+              {!effectiveId ? (
+                <div style={styles.emptyState}>
+                  <h2 style={styles.emptyTitle}>{emptyStateTitle}</h2>
+                  <p style={styles.emptyMessage}>{emptyStateMessage}</p>
+                </div>
+              ) : null}
+            </FaqSectionContext.Provider>
+          ) : activeCategory ? (
             <>
               <h2 style={styles.sectionTitle}>{activeCategory.title}</h2>
               {activeItems.length === 0 ? (
@@ -276,8 +290,8 @@ function FaqShell({
                   {activeItems.map((item) => (
                     <AccordionPrimitive.Item
                       key={item.id}
-                      value={item.id}
                       style={styles.accItem}
+                      value={item.id}
                     >
                       <AccordionPrimitive.Header>
                         <AccordionPrimitive.Trigger style={styles.accTrigger}>
