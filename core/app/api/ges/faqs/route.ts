@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { FAQ_CATEGORY_FILES } from './data';
-import type { FaqCategory, FaqItem } from './data/types';
+import { FAQ_CATEGORY_FILES } from '~/lib/ges/faq/data';
+import type { FaqCategory, FaqItem } from '~/lib/ges/faq/data/types';
 
 export const dynamic = 'force-static';
 
