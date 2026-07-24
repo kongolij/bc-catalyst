@@ -2,11 +2,29 @@
 
 import { useIsInBuilder } from '@makeswift/runtime/react';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 
 import { useFaqSectionContext } from './context';
 
-interface Item {
+interface BaseItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+type ComboValue = string | { value?: string; id?: string } | undefined;
+
+interface HiddenId {
+  id?: ComboValue;
+}
+
+interface Override {
+  itemId?: ComboValue;
+  questionOverride?: string;
+  answerOverride?: string;
+}
+
+interface AdditionalItem {
   question?: string;
   answer?: string;
 }
@@ -14,31 +32,85 @@ interface Item {
 interface Props {
   title: string;
   categorySlug: string;
-  items?: Item[];
+  baseItems: BaseItem[];
+  hiddenItemIds?: HiddenId[];
+  overrides?: Override[];
+  additionalItems?: AdditionalItem[];
 }
 
-export function FaqSection({ title, categorySlug, items = [] }: Props) {
+function comboToString(v: ComboValue): string {
+  if (typeof v === 'string') return v.trim();
+  if (v && typeof v === 'object') {
+    const raw = v.value ?? v.id ?? '';
+    return typeof raw === 'string' ? raw.trim() : '';
+  }
+  return '';
+}
+
+export function FaqSection({
+  title,
+  categorySlug,
+  baseItems,
+  hiddenItemIds,
+  overrides,
+  additionalItems,
+}: Props) {
   const { activeSlug } = useFaqSectionContext();
   const isInBuilder = useIsInBuilder();
 
-  // Live site: hide unless this section's category is the selected one.
-  // Makeswift editor: always render so merchandiser can see & edit content.
+  const items = useMemo(() => {
+    const hidden = new Set(
+      (hiddenItemIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
+    );
+    const overrideMap = new Map<string, Override>();
+    (overrides ?? []).forEach((o) => {
+      const key = comboToString(o.itemId);
+      if (key) overrideMap.set(key, o);
+    });
+
+    const merged: BaseItem[] = baseItems
+      .filter((i) => !hidden.has(i.id))
+      .map((i) => {
+        const o = overrideMap.get(i.id);
+        if (!o) return i;
+        return {
+          ...i,
+          question: o.questionOverride?.trim() ? o.questionOverride : i.question,
+          answer: o.answerOverride?.trim() ? o.answerOverride : i.answer,
+        };
+      });
+
+    (additionalItems ?? []).forEach((n, idx) => {
+      const q = (n.question ?? '').trim();
+      if (!q) return;
+      merged.push({
+        id: `custom-${categorySlug}-${idx}`,
+        question: q,
+        answer: n.answer ?? '',
+      });
+    });
+
+    return merged;
+  }, [baseItems, hiddenItemIds, overrides, additionalItems, categorySlug]);
+
   if (!isInBuilder && activeSlug !== categorySlug) return null;
+
+  const editorBadge = isInBuilder && activeSlug !== categorySlug;
 
   return (
     <section style={styles.wrap}>
-      {isInBuilder && activeSlug !== categorySlug ? (
+      {editorBadge ? (
         <div style={styles.editorBadge}>
           Editor preview — visible on the live site when the sidebar filter is set to “{title}”
         </div>
       ) : null}
       <h2 style={styles.title}>{title}</h2>
       {items.length === 0 ? (
-        <p style={styles.muted}>No items yet — add rows in the props panel.</p>
+        <p style={styles.muted}>No items — every item has been hidden.</p>
       ) : (
         <AccordionPrimitive.Root type="multiple">
-          {items.map((it, idx) => (
-            <AccordionRow answer={it.answer ?? ''} key={idx} question={it.question ?? ''} />
+          {items.map((it) => (
+            <AccordionRow answer={it.answer} key={it.id} question={it.question} />
           ))}
         </AccordionPrimitive.Root>
       )}

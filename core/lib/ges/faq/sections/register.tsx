@@ -1,4 +1,4 @@
-import { Group, List, TextArea, TextInput } from '@makeswift/runtime/controls';
+import { Combobox, Group, List, TextArea, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -6,16 +6,42 @@ import { FAQ_CATEGORY_FILES } from '../data';
 
 import { FaqSection } from './section';
 
+type ComboValue = string | { value?: string; id?: string } | undefined;
+
 interface SectionProps {
-  items?: { question?: string; answer?: string }[];
+  hiddenItemIds?: { id?: ComboValue }[];
+  overrides?: { itemId?: ComboValue; questionOverride?: string; answerOverride?: string }[];
+  additionalItems?: { question?: string; answer?: string }[];
+}
+
+function comboToString(v: ComboValue): string {
+  if (typeof v === 'string') return v.trim();
+  if (v && typeof v === 'object') {
+    const raw = v.value ?? v.id ?? '';
+    return typeof raw === 'string' ? raw.trim() : '';
+  }
+  return '';
 }
 
 for (const file of FAQ_CATEGORY_FILES) {
   const slug = file.category.id;
   const title = file.category.title;
+  const baseItems = file.items;
+
+  const options = baseItems.map((i) => {
+    const truncated = i.question.length > 70 ? `${i.question.slice(0, 69)}…` : i.question;
+    return { id: i.id, value: i.id, label: truncated };
+  });
 
   const Component = (props: SectionProps) => (
-    <FaqSection categorySlug={slug} items={props.items} title={title} />
+    <FaqSection
+      additionalItems={props.additionalItems}
+      baseItems={baseItems}
+      categorySlug={slug}
+      hiddenItemIds={props.hiddenItemIds}
+      overrides={props.overrides}
+      title={title}
+    />
   );
   Component.displayName = `FaqSection__${slug}`;
 
@@ -24,17 +50,59 @@ for (const file of FAQ_CATEGORY_FILES) {
     label: `GES / FAQ / Sections / ${title}`,
     icon: 'cube',
     props: {
-      items: List({
-        label: 'FAQ items (prepopulated from flat file — edit inline)',
+      hiddenItemIds: List({
+        label: 'Hide questions from this section',
         type: Group({
-          label: 'FAQ item',
+          label: 'Hidden question',
+          props: {
+            id: Combobox({
+              label: 'Question to hide',
+              // eslint-disable-next-line @typescript-eslint/require-await
+              async getOptions() {
+                return options;
+              },
+            }),
+          },
+        }),
+        getItemLabel: (h) => comboToString(h?.id) || 'question',
+      }),
+
+      overrides: List({
+        label: 'Edit questions (override the text)',
+        type: Group({
+          label: 'Override',
+          props: {
+            itemId: Combobox({
+              label: 'Question to edit',
+              // eslint-disable-next-line @typescript-eslint/require-await
+              async getOptions() {
+                return options;
+              },
+            }),
+            questionOverride: TextInput({
+              label: 'New question text (blank = keep original)',
+              defaultValue: '',
+            }),
+            answerOverride: TextArea({
+              label: 'New answer text (blank = keep original)',
+              defaultValue: '',
+            }),
+          },
+        }),
+        getItemLabel: (o) =>
+          o?.questionOverride || comboToString(o?.itemId) || 'Override',
+      }),
+
+      additionalItems: List({
+        label: 'Add new questions to this section',
+        type: Group({
+          label: 'New question',
           props: {
             question: TextInput({ label: 'Question', defaultValue: '' }),
             answer: TextArea({ label: 'Answer', defaultValue: '' }),
           },
         }),
-        defaultValue: file.items.map((i) => ({ question: i.question, answer: i.answer })),
-        getItemLabel: (i) => i?.question || 'Untitled question',
+        getItemLabel: (i) => i?.question || 'New question',
       }),
     },
   });
