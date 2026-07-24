@@ -1,4 +1,12 @@
-import { Checkbox, Combobox, Group, List, Style, TextInput } from '@makeswift/runtime/controls';
+import {
+  Checkbox,
+  Combobox,
+  Group,
+  List,
+  Style,
+  TextArea,
+  TextInput,
+} from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -30,13 +38,27 @@ runtime.registerComponent(GesFaqOverrideClient, {
   props: {
     className: Style(),
     title: TextInput({ label: 'Page title', defaultValue: 'Frequently Asked Questions' }),
+
+    // --- Right-panel behavior ---
     defaultCategoryId: Combobox({
-      label: 'Default category (shown on load / after Clear Filter)',
+      label: 'Default category (leave blank to show placeholder until a filter is clicked)',
       getOptions: fetchCategoryOptions,
     }),
+    emptyStateTitle: TextInput({
+      label: 'Empty-state title (right panel, when nothing is selected)',
+      defaultValue: 'Choose a category',
+    }),
+    emptyStateMessage: TextArea({
+      label: 'Empty-state message',
+      defaultValue: 'Select a topic from the sidebar to view its frequently asked questions.',
+    }),
+
+    // --- Sidebar behavior ---
+    sidebarTitle: TextInput({ label: 'Sidebar title', defaultValue: 'Filter FAQs' }),
     clearLabel: TextInput({ label: 'Clear filter label', defaultValue: '× Clear Filter' }),
     showCounts: Checkbox({ label: 'Show counts in sidebar', defaultValue: true }),
     syncToUrl: Checkbox({ label: 'Sync active filter to ?category=', defaultValue: true }),
+
     hiddenCategoryIds: List({
       label: 'Hide categories from sidebar',
       type: Group({
@@ -49,6 +71,29 @@ runtime.registerComponent(GesFaqOverrideClient, {
         const v = h?.id;
         const s = typeof v === 'string' ? v : v?.value;
         return s || 'category';
+      },
+    }),
+
+    categoryDisplay: List({
+      label: 'Rename / reorder categories (sidebar only — content is unchanged)',
+      type: Group({
+        label: 'Category display',
+        props: {
+          matchId: Combobox({ label: 'Category', getOptions: fetchCategoryOptions }),
+          labelOverride: TextInput({
+            label: 'Display label (blank = use API title)',
+            defaultValue: '',
+          }),
+          sortOverride: TextInput({
+            label: 'Sort order (lower = higher up; blank = use API sort)',
+            defaultValue: '',
+          }),
+        },
+      }),
+      getItemLabel: (o) => {
+        const m = o?.matchId;
+        const s = typeof m === 'string' ? m : m?.value;
+        return o?.labelOverride ? `${s ?? '?'} → ${o.labelOverride}` : (s ?? 'Category display');
       },
     }),
   },

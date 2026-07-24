@@ -25,14 +25,24 @@ interface HiddenId {
   id?: ComboValue;
 }
 
+interface CategoryDisplayOverride {
+  matchId?: ComboValue;
+  labelOverride?: string;
+  sortOverride?: string;
+}
+
 interface Props {
   className?: string;
   title?: string;
   defaultCategoryId?: ComboValue;
+  emptyStateTitle?: string;
+  emptyStateMessage?: string;
+  sidebarTitle?: string;
   clearLabel?: string;
   showCounts?: boolean;
   syncToUrl?: boolean;
   hiddenCategoryIds?: HiddenId[];
+  categoryDisplay?: CategoryDisplayOverride[];
 }
 
 function comboToString(v: ComboValue): string {
@@ -87,9 +97,13 @@ function FaqShell({
   className,
   title = 'Frequently Asked Questions',
   defaultCategoryId,
+  emptyStateTitle = 'Choose a category',
+  emptyStateMessage = 'Select a topic from the sidebar to view its frequently asked questions.',
+  sidebarTitle = 'Filter FAQs',
   clearLabel = '× Clear Filter',
   showCounts = true,
   hiddenCategoryIds,
+  categoryDisplay,
   activeId,
   setActiveId,
 }: ShellProps) {
@@ -116,23 +130,42 @@ function FaqShell({
     };
   }, []);
 
-  const visibleCategories = useMemo(() => {
+  const visibleCategories = useMemo<ApiCategory[]>(() => {
     const hidden = new Set(
       (hiddenCategoryIds ?? []).map((h) => comboToString(h.id)).filter(Boolean),
     );
-    return apiCategories.filter((c) => !hidden.has(c.id)).sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [apiCategories, hiddenCategoryIds]);
+    const overridesById = new Map<string, CategoryDisplayOverride>();
+    (categoryDisplay ?? []).forEach((o) => {
+      const key = comboToString(o.matchId);
+      if (key) overridesById.set(key, o);
+    });
 
-  const defaultId = comboToString(defaultCategoryId) || visibleCategories[0]?.id || null;
+    return apiCategories
+      .filter((c) => !hidden.has(c.id))
+      .map((c) => {
+        const override = overridesById.get(c.id);
+        if (!override) return c;
+        const labelNext = override.labelOverride?.trim() ? override.labelOverride : c.title;
+        const sortNext = override.sortOverride?.trim()
+          ? Number(override.sortOverride) || c.sortOrder
+          : c.sortOrder;
+        return { ...c, title: labelNext, sortOrder: sortNext };
+      })
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [apiCategories, hiddenCategoryIds, categoryDisplay]);
+
+  const defaultId = comboToString(defaultCategoryId) || null;
+  // Blank default => right side stays as a placeholder until the user picks a filter.
   const effectiveId = activeId ?? defaultId;
-  const activeCategory =
-    visibleCategories.find((c) => c.id === effectiveId) ?? visibleCategories[0];
+  const activeCategory = effectiveId
+    ? visibleCategories.find((c) => c.id === effectiveId) ?? null
+    : null;
   const activeItems = useMemo(
-    () => apiItems.filter((i) => i.categoryId === activeCategory?.id),
-    [apiItems, activeCategory?.id],
+    () => (activeCategory ? apiItems.filter((i) => i.categoryId === activeCategory.id) : []),
+    [apiItems, activeCategory],
   );
 
-  const isFiltered = activeId !== null && activeId !== defaultId;
+  const isFiltered = activeId !== null;
 
   return (
     <section className={clsx('ges-faq', className)} style={styles.wrap}>
@@ -141,7 +174,7 @@ function FaqShell({
       <div style={styles.grid}>
         <aside style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
-            <h3 style={styles.sidebarTitle}>Filter FAQs</h3>
+            <h3 style={styles.sidebarTitle}>{sidebarTitle}</h3>
             {isFiltered ? (
               <button type="button" style={styles.clearBtn} onClick={() => setActiveId(null)}>
                 {clearLabel}
@@ -200,7 +233,10 @@ function FaqShell({
               )}
             </>
           ) : (
-            <p style={styles.muted}>No categories available.</p>
+            <div style={styles.emptyState}>
+              <h2 style={styles.emptyTitle}>{emptyStateTitle}</h2>
+              <p style={styles.emptyMessage}>{emptyStateMessage}</p>
+            </div>
           )}
         </div>
       </div>
@@ -296,4 +332,13 @@ const styles: Record<string, React.CSSProperties> = {
   accContent: { overflow: 'hidden' },
   accAnswer: { padding: '0 0 16px', color: '#333', lineHeight: 1.5 },
   muted: { color: '#888', fontSize: 14 },
+  emptyState: {
+    padding: '48px 24px',
+    textAlign: 'center',
+    border: '1px dashed #d1d5db',
+    borderRadius: 8,
+    background: '#f9fafb',
+  },
+  emptyTitle: { fontSize: 20, fontWeight: 600, marginBottom: 8, color: '#0a2540' },
+  emptyMessage: { fontSize: 14, color: '#4b5563', margin: 0, lineHeight: 1.5 },
 };
