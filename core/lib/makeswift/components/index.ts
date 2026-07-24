@@ -41,6 +41,7 @@ import './category-list/register';
 import './faq/register';
 import './faq-page-template/register';
 import './ges-faq-poc/register';
+import './ges-faq-override/register';
 import './find-show/register';
 import './ges-accordion/register';
 import './ges-accordion-page/register';
