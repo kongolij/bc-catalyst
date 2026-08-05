@@ -11,6 +11,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
+import { useIsInBuilder } from '@makeswift/runtime/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -311,6 +312,7 @@ export function GesShowHeaderClient({
   demoBrand = {},
   scrollBehavior = 'static',
 }: Props) {
+  const isInBuilder = useIsInBuilder();
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -415,6 +417,12 @@ export function GesShowHeaderClient({
     showSearch: actions.showSearch ?? true,
     ...actions,
   };
+  const unmatchedDeltas = (catalog.overrides ?? []).filter(
+    (delta) =>
+      (delta.matchId ?? 0) > 0 &&
+      !tree.some((category) => category.entityId === delta.matchId),
+  );
+
   return (
     <div className={['ges-eval-header', scrollBehavior === 'sticky' ? 'ges-eval-header--sticky' : '', className].filter(Boolean).join(' ')}>
       <header>
@@ -431,6 +439,32 @@ export function GesShowHeaderClient({
           {status === 'ready' && tree.length === 0 && (catalog.emptyLabel || 'Products')}
         </div>
       </header>
+      {isInBuilder && (
+        <aside className="ges-eval-header__editor-help">
+          <div>
+            <strong>API categories available for editing</strong>
+            <span>Copy an ID into “Edit or hide API categories.”</span>
+          </div>
+          <ul>
+            {tree.map((category) => (
+              <li key={category.entityId}>
+                <span>{category.name}</span>
+                <code>BC ID {category.entityId}</code>
+              </li>
+            ))}
+          </ul>
+          {unmatchedDeltas.length > 0 && (
+            <p role="alert">
+              No loaded API category matches:{' '}
+              {unmatchedDeltas.map((delta) => delta.matchId).join(', ')}. Check the IDs above.
+            </p>
+          )}
+          <small>
+            Rename or remove an API category using its ID. To create a new top-level link, use
+            “Add new menu items / static pages.”
+          </small>
+        </aside>
+      )}
     </div>
   );
 }
