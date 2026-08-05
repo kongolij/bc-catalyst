@@ -1,5 +1,6 @@
 'use client';
 
+import { useIsInBuilder } from '@makeswift/runtime/react';
 import { ChevronDown, ChevronRight, Languages, Menu, Search, ShoppingCart, Store, UserRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -157,6 +158,7 @@ function OverflowMenu({ label, nodes }: { label: string; nodes: MenuNode[] }) {
 const OVERFLOW_LABEL = 'More';
 
 function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
+  const isInBuilder = useIsInBuilder();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [activeColumn, setActiveColumn] = useState(0);
   const [visibleCount, setVisibleCount] = useState(nodes.length);
@@ -164,6 +166,11 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
   const measurementRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
+    if (isInBuilder) {
+      setVisibleCount(nodes.length);
+      return;
+    }
+
     const nav = navRef.current;
     const measurement = measurementRef.current;
     if (!nav || !measurement) return;
@@ -198,9 +205,9 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
     measure();
 
     return () => observer.disconnect();
-  }, [nodes]);
+  }, [nodes, isInBuilder]);
 
-  const effectiveVisibleCount = Math.min(visibleCount, nodes.length);
+  const effectiveVisibleCount = isInBuilder ? nodes.length : Math.min(visibleCount, nodes.length);
   const visibleNodes = nodes.slice(0, effectiveVisibleCount);
   const overflowNodes = nodes.slice(effectiveVisibleCount);
 
