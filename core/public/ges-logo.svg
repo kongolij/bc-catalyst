@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="152" height="58" viewBox="0 0 152 58" role="img" aria-labelledby="title">
+  <title id="title">GES</title>
+  <rect x="1" y="1" width="56" height="56" rx="8" fill="#F4CE45" stroke="#153E52" stroke-width="2"/>
+  <path d="M29 12c1.8 8.7 6.3 13.2 15 15-8.7 1.8-13.2 6.3-15 15-1.8-8.7-6.3-13.2-15-15 8.7-1.8 13.2-6.3 15-15Z" fill="#153E52"/>
+  <text x="67" y="41" fill="#153E52" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">GES</text>
+</svg>
