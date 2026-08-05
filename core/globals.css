@@ -867,7 +867,8 @@ a.ges-nav__leaf:hover {
   display: none;
 }
 
-@media (max-width: 1099px) {
+/* Keep the desktop menu visible in Makeswift's narrowed desktop preview. */
+@media (max-width: 799px) {
   .ges-eval-header__desktop-nav,
   .ges-eval-header__main-actions,
   .ges-eval-header__utility {

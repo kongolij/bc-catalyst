@@ -3,7 +3,6 @@ import { setRequestLocale } from 'next-intl/server';
 import { PropsWithChildren } from 'react';
 
 import { Footer } from '~/components/footer';
-import { Header } from '~/components/header';
 import { MakeswiftProvider } from '~/components/makeswift/provider';
 
 interface Props extends PropsWithChildren {
@@ -17,8 +16,6 @@ export default async function DefaultLayout({ params, children }: Props) {
 
   return (
     <MakeswiftProvider siteVersion={await getSiteVersion()}>
-      <Header />
-
       <main>{children}</main>
 
       <Footer />
