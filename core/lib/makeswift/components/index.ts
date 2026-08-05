@@ -73,6 +73,7 @@ import './ges-category-grid/register';
 import './ges-category-grid-override/register';
 import './ges-catalog-nav/register';
 import './ges-site-header/register';
+import './ges-show-header/register';
 import './ges-static-nav/register';
 import './ges-header-nav/register';
 import './ges-show-timeline/register';
