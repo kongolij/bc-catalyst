@@ -18,6 +18,13 @@ interface CategoryOverride {
   order?: number;
 }
 
+interface CategoryAddition {
+  parentId?: number | string | { value?: string };
+  label?: string;
+  href?: string;
+  order?: number;
+}
+
 interface StaticLink {
   label?: string;
   href?: string;
@@ -58,8 +65,10 @@ interface Props {
   logo?: { image?: string; alt?: string; text?: string; href?: string };
   catalog?: {
     overrides?: CategoryOverride[];
+    additions?: CategoryAddition[];
   };
   staticItems?: StaticItem[];
+  appearance?: { backgroundColor?: string };
   actions?: {
     showLocale?: boolean;
     showAccount?: boolean;
@@ -82,7 +91,7 @@ interface Props {
 }
 
 const categoryHref = (path: string) => `/category${path.startsWith('/') ? path : `/${path}`}`;
-const getCategoryId = (value: CategoryOverride['matchId']) => {
+const getCategoryId = (value: CategoryOverride['matchId'] | CategoryAddition['parentId']) => {
   const rawValue = typeof value === 'object' ? value?.value : value;
   const parsed = Number(rawValue);
 
@@ -279,7 +288,7 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
   );
 }
 
-export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
+export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, appearance = {}, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -308,11 +317,51 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
       const id = getCategoryId(override.matchId);
       if (id) overrideMap.set(id, override);
     });
+    const additionsByParent = new Map<number, CategoryAddition[]>();
+    catalog.additions?.forEach((addition) => {
+      const parentId = getCategoryId(addition.parentId);
+      if (!parentId || !addition.label?.trim()) return;
+      additionsByParent.set(parentId, [...(additionsByParent.get(parentId) ?? []), addition]);
+    });
 
-    const apiNodes: MenuNode[] = tree
-      .map((root, apiIndex): MenuNode | null => {
-        const delta = overrideMap.get(root.entityId);
-        if (delta?.hide) return null;
+    const getOrder = (order: number | undefined, fallback: number) => (order && order > 0 ? order : 10_000 + fallback);
+    const visibleCategories = (categories: CategoryNode[]) =>
+      categories
+        .map((category, apiIndex) => ({ category, apiIndex, delta: overrideMap.get(category.entityId) }))
+        .filter(({ delta }) => !delta?.hide)
+        .sort((left, right) => getOrder(left.delta?.order, left.apiIndex) - getOrder(right.delta?.order, right.apiIndex));
+
+    const apiNodes: MenuNode[] = visibleCategories(tree)
+      .map(({ category: root, apiIndex, delta }): MenuNode => {
+        const childColumns = visibleCategories(root.children ?? []).map(({ category: child, apiIndex: childIndex, delta: childDelta }) => {
+          const leafLinks = visibleCategories(child.children ?? []).map(({ category: leaf, delta: leafDelta }) => ({
+            label: leafDelta?.renameLabel?.trim() || leaf.name,
+            href: categoryHref(leaf.path),
+            order: leafDelta?.order,
+          }));
+          const addedLeafLinks = (additionsByParent.get(child.entityId) ?? []).map((addition) => ({
+            label: addition.label!.trim(),
+            href: addition.href?.trim() || '#',
+            order: addition.order,
+          }));
+          const links = [...leafLinks.map((link, index) => ({ ...link, sort: getOrder(link.order, index) })), ...addedLeafLinks.map((link, index) => ({ ...link, sort: getOrder(link.order, leafLinks.length + index) }))]
+            .sort((left, right) => left.sort - right.sort)
+            .map(({ label, href }) => ({ label, href }));
+
+          return {
+            label: childDelta?.renameLabel?.trim() || child.name,
+            href: categoryHref(child.path),
+            links,
+            sort: getOrder(childDelta?.order, childIndex),
+          };
+        });
+        const addedChildColumns = (additionsByParent.get(root.entityId) ?? []).map((addition, additionIndex) => ({
+          label: addition.label!.trim(),
+          href: addition.href?.trim() || '#',
+          links: [],
+          sort: getOrder(addition.order, childColumns.length + additionIndex),
+        }));
+
         return {
           key: `api-${root.entityId}`,
           label: delta?.renameLabel?.trim() || root.name,
@@ -320,17 +369,11 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
           source: 'api',
           order: delta?.order,
           apiIndex,
-          columns: (root.children ?? []).map((child) => ({
-            label: child.name,
-            href: categoryHref(child.path),
-            links: (child.children ?? []).map((leaf) => ({
-              label: leaf.name,
-              href: categoryHref(leaf.path),
-            })),
-          })),
+          columns: [...childColumns, ...addedChildColumns]
+            .sort((left, right) => left.sort - right.sort)
+            .map((column) => ({ label: column.label, href: column.href, links: column.links })),
         };
       })
-      .filter((node): node is MenuNode => node !== null)
       .sort((left, right) => {
         const leftOrder = left.order && left.order > 0 ? left.order : 10_000 + left.apiIndex;
         const rightOrder = right.order && right.order > 0 ? right.order : 10_000 + right.apiIndex;
@@ -397,7 +440,7 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
       : [];
 
     return [...before, ...apiNodes, ...brand, ...after];
-  }, [catalog.overrides, demoBrand, staticItems, tree]);
+  }, [catalog.additions, catalog.overrides, demoBrand, staticItems, tree]);
 
   const effectiveActions = {
     showLocale: actions.showLocale ?? true,
@@ -410,7 +453,7 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
   };
   return (
     <div className={['ges-eval-header', scrollBehavior === 'sticky' ? 'ges-eval-header--sticky' : '', className].filter(Boolean).join(' ')}>
-      <header>
+      <header style={{ backgroundColor: appearance.backgroundColor || '#ffffff' }}>
         <div className="ges-eval-header__utility">
           <Actions
             actions={{

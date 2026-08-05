@@ -1,30 +1,59 @@
-import { Checkbox, Combobox, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Color, Combobox, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesShowHeaderClient } from './client';
 
-async function fetchFeaturedCategoryOptions(query: string) {
+interface CategoryOptionNode {
+  entityId: number;
+  name: string;
+  children?: CategoryOptionNode[];
+}
+
+interface CategoryOption {
+  id: string;
+  label: string;
+  value: string;
+  depth: number;
+}
+
+function flattenCategoryOptions(nodes: CategoryOptionNode[], parents: string[] = [], depth = 1): CategoryOption[] {
+  return nodes.flatMap((node) => {
+    const breadcrumb = [...parents, node.name];
+
+    return [
+      {
+        id: String(node.entityId),
+        label: `${breadcrumb.join(' › ')} (BC ${node.entityId})`,
+        value: String(node.entityId),
+        depth,
+      },
+      ...flattenCategoryOptions(node.children ?? [], breadcrumb, depth + 1),
+    ];
+  });
+}
+
+async function fetchFeaturedCategoryOptions(query: string, maximumDepth = 3) {
   try {
-    const response = await fetch('/api/bc/categories/top-level?filter=featured');
+    const response = await fetch('/api/bc/nav-tree?filter=featured&featuredFirst=50');
     if (!response.ok) return [];
 
     const data = (await response.json()) as {
-      categories?: Array<{ entityId: number; name: string }>;
+      tree?: CategoryOptionNode[];
     };
     const search = query.trim().toLowerCase();
 
-    return (data.categories ?? [])
-      .filter((category) => !search || category.name.toLowerCase().includes(search) || String(category.entityId).includes(search))
-      .map((category) => ({
-        id: String(category.entityId),
-        label: `${category.name} (BC ${category.entityId})`,
-        value: String(category.entityId),
-      }));
+    return flattenCategoryOptions(data.tree ?? [])
+      .filter((category) => category.depth <= maximumDepth)
+      .filter((category) => !search || category.label.toLowerCase().includes(search) || category.value.includes(search))
+      .map((category) => ({ id: category.id, label: category.label, value: category.value }));
   } catch {
     return [];
   }
 }
+
+const fetchEditableCategoryOptions = (query: string) => fetchFeaturedCategoryOptions(query);
+const fetchCategoryParentOptions = (query: string) => fetchFeaturedCategoryOptions(query, 2);
 
 runtime.registerComponent(GesShowHeaderClient, {
   type: 'ges-show-header-evaluation',
@@ -52,8 +81,8 @@ runtime.registerComponent(GesShowHeaderClient, {
             label: 'Category change',
             props: {
               matchId: Combobox({
-                label: 'Search and select a featured category',
-                getOptions: fetchFeaturedCategoryOptions,
+                label: 'Search the complete featured taxonomy',
+                getOptions: fetchEditableCategoryOptions,
               }),
               hide: Checkbox({
                 label: 'Hide from header',
@@ -74,6 +103,22 @@ runtime.registerComponent(GesShowHeaderClient, {
             if (typeof item?.matchId === 'object') return item.matchId.label || 'Selected category';
             return item?.matchId ? `BC category ${item.matchId}` : 'Choose a category';
           },
+        }),
+        additions: List({
+          label: 'Add links beneath BC categories',
+          type: Group({
+            label: 'New category link',
+            props: {
+              parentId: Combobox({
+                label: 'Search and select a root or subcategory',
+                getOptions: fetchCategoryParentOptions,
+              }),
+              label: TextInput({ label: 'New link name', defaultValue: 'New link' }),
+              href: TextInput({ label: 'Link URL', defaultValue: '' }),
+              order: Number({ label: 'Order (blank/0 places it last)', defaultValue: 0 }),
+            },
+          }),
+          getItemLabel: (item: { label?: string }) => item?.label || 'New category link',
         }),
       },
     }),
@@ -133,6 +178,12 @@ runtime.registerComponent(GesShowHeaderClient, {
         },
       }),
       getItemLabel: (item: { label?: string }) => item?.label || 'Static item',
+    }),
+    appearance: Group({
+      label: 'Navigation appearance',
+      props: {
+        backgroundColor: Color({ label: 'Navigation background color', defaultValue: '#ffffff' }),
+      },
     }),
     actions: Group({
       label: 'Header right side',
