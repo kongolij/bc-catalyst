@@ -75,6 +75,7 @@ import './ges-catalog-nav/register';
 import './ges-site-header/register';
 import './ges-show-header/register';
 import './ges-show-footer/register';
+import './ges-composable-footer/register';
 import './ges-static-nav/register';
 import './ges-header-nav/register';
 import './ges-show-timeline/register';
