@@ -1,14 +1,35 @@
-import { Checkbox, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Combobox, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesShowHeaderClient } from './client';
 
+async function fetchFeaturedCategoryOptions(query: string) {
+  try {
+    const response = await fetch('/api/bc/categories/top-level?filter=featured');
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as {
+      categories?: Array<{ entityId: number; name: string }>;
+    };
+    const search = query.trim().toLowerCase();
+
+    return (data.categories ?? [])
+      .filter((category) => !search || category.name.toLowerCase().includes(search) || String(category.entityId).includes(search))
+      .map((category) => ({
+        id: String(category.entityId),
+        label: `${category.name} (BC ${category.entityId})`,
+        value: String(category.entityId),
+      }));
+  } catch {
+    return [];
+  }
+}
+
 runtime.registerComponent(GesShowHeaderClient, {
   type: 'ges-show-header-evaluation',
   label: 'GES / Navigation / Show Header (API + delta)',
-  description:
-    'Evaluation header: featured-product BC categories + small editorial deltas + static page navigation.',
+  description: 'Evaluation header: featured-product BC categories + small editorial deltas + static page navigation.',
   icon: 'navigation',
   props: {
     className: Style(),
@@ -25,32 +46,34 @@ runtime.registerComponent(GesShowHeaderClient, {
     catalog: Group({
       label: 'Commerce menu — API + delta',
       props: {
-        featuredLimit: Number({ label: 'Featured products to inspect', defaultValue: 50 }),
-        loadingLabel: TextInput({ label: 'Loading label', defaultValue: 'Loading products…' }),
-        emptyLabel: TextInput({
-          label: 'No eligible categories label',
-          defaultValue: 'Products',
-        }),
         overrides: List({
-          label: 'Edit or hide API categories',
+          label: 'Rename, hide, or reorder categories',
           type: Group({
-            label: 'API category edit',
+            label: 'Category change',
             props: {
-              matchId: Number({ label: 'BC category ID (copy from preview)', defaultValue: 0 }),
-              hide: Checkbox({ label: 'Remove this category from the menu', defaultValue: false }),
+              matchId: Combobox({
+                label: 'Search and select a featured category',
+                getOptions: fetchFeaturedCategoryOptions,
+              }),
+              hide: Checkbox({
+                label: 'Hide from header',
+                defaultValue: false,
+              }),
               renameLabel: TextInput({
-                label: 'New menu name (blank keeps BC name)',
+                label: 'Header name (blank keeps BC name)',
                 defaultValue: '',
               }),
-              order: Number({ label: 'Order override (blank/0 = API order)', defaultValue: 0 }),
+              order: Number({
+                label: 'Menu order (blank/0 keeps API order)',
+                defaultValue: 0,
+              }),
             },
           }),
-          getItemLabel: (item: { renameLabel?: string; matchId?: number }) =>
-            item?.renameLabel
-              ? `${item.renameLabel} (id ${item.matchId ?? 0})`
-              : item?.matchId
-                ? `BC category ${item.matchId}`
-                : 'Set a BC category ID',
+          getItemLabel: (item: { renameLabel?: string; matchId?: number | string | { label?: string; value?: string } }) => {
+            if (item?.renameLabel) return item.renameLabel;
+            if (typeof item?.matchId === 'object') return item.matchId.label || 'Selected category';
+            return item?.matchId ? `BC category ${item.matchId}` : 'Choose a category';
+          },
         }),
       },
     }),
@@ -59,7 +82,10 @@ runtime.registerComponent(GesShowHeaderClient, {
       type: Group({
         label: 'Static menu item',
         props: {
-          label: TextInput({ label: 'Label', defaultValue: 'Show Information' }),
+          label: TextInput({
+            label: 'Label',
+            defaultValue: 'Show Information',
+          }),
           href: TextInput({ label: 'Link (optional)', defaultValue: '' }),
           position: Select({
             label: 'Position',
@@ -74,16 +100,28 @@ runtime.registerComponent(GesShowHeaderClient, {
             type: Group({
               label: 'Dropdown group',
               props: {
-                label: TextInput({ label: 'Group label', defaultValue: 'Show information' }),
-                href: TextInput({ label: 'Group link (optional)', defaultValue: '' }),
+                label: TextInput({
+                  label: 'Group label',
+                  defaultValue: 'Show information',
+                }),
+                href: TextInput({
+                  label: 'Group link (optional)',
+                  defaultValue: '',
+                }),
                 links: List({
                   label: 'Links',
                   type: Group({
                     label: 'Link',
                     props: {
-                      label: TextInput({ label: 'Label', defaultValue: 'Quick facts' }),
+                      label: TextInput({
+                        label: 'Label',
+                        defaultValue: 'Quick facts',
+                      }),
                       href: TextInput({ label: 'URL', defaultValue: '' }),
-                      newTab: Checkbox({ label: 'Open in new tab', defaultValue: false }),
+                      newTab: Checkbox({
+                        label: 'Open in new tab',
+                        defaultValue: false,
+                      }),
                     },
                   }),
                   getItemLabel: (item: { label?: string }) => item?.label || 'Link',
@@ -106,12 +144,30 @@ runtime.registerComponent(GesShowHeaderClient, {
         showCart: Checkbox({ label: 'Show cart', defaultValue: true }),
         showSearch: Checkbox({ label: 'Show search', defaultValue: true }),
         localeLabel: TextInput({ label: 'Locale label', defaultValue: 'EN' }),
-        accountLabel: TextInput({ label: 'Account label', defaultValue: 'Account' }),
-        accountHref: TextInput({ label: 'Account link', defaultValue: '/login' }),
-        boothLabel: TextInput({ label: 'Booth label', defaultValue: 'Find or Add Your Booth' }),
-        boothHref: TextInput({ label: 'Booth link', defaultValue: '/account/shows' }),
-        contactLabel: TextInput({ label: 'Contact label', defaultValue: 'Contact Us' }),
-        contactHref: TextInput({ label: 'Contact link', defaultValue: '/contact-us' }),
+        accountLabel: TextInput({
+          label: 'Account label',
+          defaultValue: 'Account',
+        }),
+        accountHref: TextInput({
+          label: 'Account link',
+          defaultValue: '/login',
+        }),
+        boothLabel: TextInput({
+          label: 'Booth label',
+          defaultValue: 'Find or Add Your Booth',
+        }),
+        boothHref: TextInput({
+          label: 'Booth link',
+          defaultValue: '/account/shows',
+        }),
+        contactLabel: TextInput({
+          label: 'Contact label',
+          defaultValue: 'Contact Us',
+        }),
+        contactHref: TextInput({
+          label: 'Contact link',
+          defaultValue: '/contact-us',
+        }),
         cartHref: TextInput({ label: 'Cart link', defaultValue: '/cart' }),
         demoCartCount: Number({ label: 'Demo cart count', defaultValue: 2 }),
       },
@@ -119,8 +175,14 @@ runtime.registerComponent(GesShowHeaderClient, {
     demoBrand: Group({
       label: 'Demo fallback data',
       props: {
-        showBrand: Checkbox({ label: 'Show demo brand link', defaultValue: false }),
-        brandLabel: TextInput({ label: 'Brand label', defaultValue: 'GES Collections' }),
+        showBrand: Checkbox({
+          label: 'Show demo brand link',
+          defaultValue: false,
+        }),
+        brandLabel: TextInput({
+          label: 'Brand label',
+          defaultValue: 'GES Collections',
+        }),
         brandHref: TextInput({ label: 'Brand link', defaultValue: '/brands' }),
       },
     }),

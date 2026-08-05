@@ -1,17 +1,6 @@
 'use client';
 
-import {
-  ChevronDown,
-  ChevronRight,
-  Languages,
-  Menu,
-  Search,
-  ShoppingCart,
-  Store,
-  UserRound,
-  X,
-} from 'lucide-react';
-import { useIsInBuilder } from '@makeswift/runtime/react';
+import { ChevronDown, ChevronRight, Languages, Menu, Search, ShoppingCart, Store, UserRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -23,7 +12,7 @@ interface CategoryNode {
 }
 
 interface CategoryOverride {
-  matchId?: number;
+  matchId?: number | string | { value?: string };
   hide?: boolean;
   renameLabel?: string;
   order?: number;
@@ -68,9 +57,6 @@ interface Props {
   className?: string;
   logo?: { image?: string; alt?: string; text?: string; href?: string };
   catalog?: {
-    featuredLimit?: number;
-    loadingLabel?: string;
-    emptyLabel?: string;
     overrides?: CategoryOverride[];
   };
   staticItems?: StaticItem[];
@@ -96,6 +82,12 @@ interface Props {
 }
 
 const categoryHref = (path: string) => `/category${path.startsWith('/') ? path : `/${path}`}`;
+const getCategoryId = (value: CategoryOverride['matchId']) => {
+  const rawValue = typeof value === 'object' ? value?.value : value;
+  const parsed = Number(rawValue);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
 
 function Logo({ image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Props['logo']>) {
   return (
@@ -132,12 +124,7 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
                   {node.label}
                 </Link>
                 {hasChildren && (
-                  <button
-                    aria-expanded={open}
-                    aria-label={`Open ${node.label} menu`}
-                    onClick={() => setOpenKey(open ? null : node.key)}
-                    type="button"
-                  >
+                  <button aria-expanded={open} aria-label={`Open ${node.label} menu`} onClick={() => setOpenKey(open ? null : node.key)} type="button">
                     <ChevronDown aria-hidden size={15} />
                   </button>
                 )}
@@ -146,17 +133,9 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
               {hasChildren && open && (
                 <div className="ges-eval-header__mega-menu">
                   <div className="ges-eval-header__mega-list">
-                    <div className="ges-eval-header__eyebrow">
-                      {node.source === 'api' ? 'Eligible categories' : 'Pages'}
-                    </div>
+                    <div className="ges-eval-header__eyebrow">{node.source === 'api' ? 'Eligible categories' : 'Pages'}</div>
                     {node.columns.map((item, index) => (
-                      <button
-                        className={index === activeColumn ? 'is-active' : ''}
-                        key={`${node.key}-${item.label}-${index}`}
-                        onMouseEnter={() => setActiveColumn(index)}
-                        onFocus={() => setActiveColumn(index)}
-                        type="button"
-                      >
+                      <button className={index === activeColumn ? 'is-active' : ''} key={`${node.key}-${item.label}-${index}`} onMouseEnter={() => setActiveColumn(index)} onFocus={() => setActiveColumn(index)} type="button">
                         <span>{item.label}</span>
                         {item.links.length > 0 && <ChevronRight aria-hidden size={16} />}
                       </button>
@@ -166,12 +145,7 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
                     <div className="ges-eval-header__eyebrow">{column?.label}</div>
                     {column?.href && <Link href={column.href}>View all {column.label}</Link>}
                     {column?.links.map((link) => (
-                      <Link
-                        href={link.href}
-                        key={`${column.label}-${link.label}-${link.href}`}
-                        rel={link.newTab ? 'noopener noreferrer' : undefined}
-                        target={link.newTab ? '_blank' : undefined}
-                      >
+                      <Link href={link.href} key={`${column.label}-${link.label}-${link.href}`} rel={link.newTab ? 'noopener noreferrer' : undefined} target={link.newTab ? '_blank' : undefined}>
                         {link.label}
                       </Link>
                     ))}
@@ -219,13 +193,7 @@ function Actions({ actions, mobile = false }: { actions: NonNullable<Props['acti
         </Link>
       )}
       {actions.showSearch && (
-        <button
-          aria-expanded={searchOpen}
-          aria-label="Search"
-          className={actionClass}
-          onClick={() => setSearchOpen((current) => !current)}
-          type="button"
-        >
+        <button aria-expanded={searchOpen} aria-label="Search" className={actionClass} onClick={() => setSearchOpen((current) => !current)} type="button">
           <Search aria-hidden size={18} />
         </button>
       )}
@@ -234,7 +202,10 @@ function Actions({ actions, mobile = false }: { actions: NonNullable<Props['acti
           <label htmlFor="ges-header-search">Search products</label>
           <div>
             <input autoFocus id="ges-header-search" name="term" placeholder="Search products" />
-            <button type="submit"><Search aria-hidden size={18} /><span className="sr-only">Submit search</span></button>
+            <button type="submit">
+              <Search aria-hidden size={18} />
+              <span className="sr-only">Submit search</span>
+            </button>
           </div>
         </form>
       )}
@@ -264,20 +235,19 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
           <aside aria-label="Mobile navigation">
             <div className="ges-eval-header__mobile-title">
               <strong>Menu</strong>
-              <button aria-label="Close navigation" onClick={() => setOpen(false)} type="button"><X aria-hidden /></button>
+              <button aria-label="Close navigation" onClick={() => setOpen(false)} type="button">
+                <X aria-hidden />
+              </button>
             </div>
             <nav>
               {nodes.map((node) => (
                 <div className="ges-eval-header__mobile-node" key={node.key}>
                   <div>
-                    <Link href={node.href || '#'} onClick={() => setOpen(false)}>{node.label}</Link>
+                    <Link href={node.href || '#'} onClick={() => setOpen(false)}>
+                      {node.label}
+                    </Link>
                     {node.columns.length > 0 && (
-                      <button
-                        aria-expanded={expanded === node.key}
-                        aria-label={`Expand ${node.label}`}
-                        onClick={() => setExpanded(expanded === node.key ? null : node.key)}
-                        type="button"
-                      >
+                      <button aria-expanded={expanded === node.key} aria-label={`Expand ${node.label}`} onClick={() => setExpanded(expanded === node.key ? null : node.key)} type="button">
                         <ChevronDown aria-hidden size={18} />
                       </button>
                     )}
@@ -287,7 +257,11 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
                       {node.columns.map((column) => (
                         <div key={`${node.key}-${column.label}`}>
                           {column.href ? <Link href={column.href}>{column.label}</Link> : <strong>{column.label}</strong>}
-                          {column.links.map((link) => <Link href={link.href} key={`${column.label}-${link.label}`}>{link.label}</Link>)}
+                          {column.links.map((link) => (
+                            <Link href={link.href} key={`${column.label}-${link.label}`}>
+                              {link.label}
+                            </Link>
+                          ))}
                         </div>
                       ))}
                     </div>
@@ -295,7 +269,9 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
                 </div>
               ))}
             </nav>
-            <div className="ges-eval-header__mobile-actions"><Actions actions={actions} mobile /></div>
+            <div className="ges-eval-header__mobile-actions">
+              <Actions actions={actions} mobile />
+            </div>
           </aside>
         </div>
       )}
@@ -303,23 +279,15 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
   );
 }
 
-export function GesShowHeaderClient({
-  className,
-  logo = {},
-  catalog = {},
-  staticItems,
-  actions = {},
-  demoBrand = {},
-  scrollBehavior = 'static',
-}: Props) {
-  const isInBuilder = useIsInBuilder();
+export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     const controller = new AbortController();
-    const limit = Math.max(1, Math.min(catalog.featuredLimit || 50, 250));
-    fetch(`/api/bc/nav-tree?filter=featured&featuredFirst=${limit}`, { signal: controller.signal })
+    fetch('/api/bc/nav-tree?filter=featured&featuredFirst=50', {
+      signal: controller.signal,
+    })
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok || data?.error) throw new Error(data?.error || 'Navigation request failed');
@@ -332,12 +300,13 @@ export function GesShowHeaderClient({
         setStatus('error');
       });
     return () => controller.abort();
-  }, [catalog.featuredLimit]);
+  }, []);
 
   const nodes = useMemo(() => {
     const overrideMap = new Map<number, CategoryOverride>();
     catalog.overrides?.forEach((override) => {
-      if ((override.matchId ?? 0) > 0) overrideMap.set(override.matchId!, override);
+      const id = getCategoryId(override.matchId);
+      if (id) overrideMap.set(id, override);
     });
 
     const apiNodes: MenuNode[] = tree
@@ -354,7 +323,10 @@ export function GesShowHeaderClient({
           columns: (root.children ?? []).map((child) => ({
             label: child.name,
             href: categoryHref(child.path),
-            links: (child.children ?? []).map((leaf) => ({ label: leaf.name, href: categoryHref(leaf.path) })),
+            links: (child.children ?? []).map((leaf) => ({
+              label: leaf.name,
+              href: categoryHref(leaf.path),
+            })),
           })),
         };
       })
@@ -395,14 +367,33 @@ export function GesShowHeaderClient({
         href: group.href || undefined,
         links: (group.links ?? [])
           .filter((link) => link.label?.trim())
-          .map((link) => ({ label: link.label!, href: link.href || '#', newTab: link.newTab })),
+          .map((link) => ({
+            label: link.label!,
+            href: link.href || '#',
+            newTab: link.newTab,
+          })),
       })),
     });
 
-    const before = defaults.map((item, index) => ({ item, index })).filter(({ item }) => item.position === 'before').map(({ item, index }) => mapStatic(item, index));
-    const after = defaults.map((item, index) => ({ item, index })).filter(({ item }) => item.position !== 'before').map(({ item, index }) => mapStatic(item, index));
+    const before = defaults
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.position === 'before')
+      .map(({ item, index }) => mapStatic(item, index));
+    const after = defaults
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.position !== 'before')
+      .map(({ item, index }) => mapStatic(item, index));
     const brand: MenuNode[] = demoBrand.showBrand
-      ? [{ key: 'demo-brand', label: demoBrand.brandLabel || 'GES Collections', href: demoBrand.brandHref || '/brands', columns: [], source: 'demo', apiIndex: 0 }]
+      ? [
+          {
+            key: 'demo-brand',
+            label: demoBrand.brandLabel || 'GES Collections',
+            href: demoBrand.brandHref || '/brands',
+            columns: [],
+            source: 'demo',
+            apiIndex: 0,
+          },
+        ]
       : [];
 
     return [...before, ...apiNodes, ...brand, ...after];
@@ -417,54 +408,40 @@ export function GesShowHeaderClient({
     showSearch: actions.showSearch ?? true,
     ...actions,
   };
-  const unmatchedDeltas = (catalog.overrides ?? []).filter(
-    (delta) =>
-      (delta.matchId ?? 0) > 0 &&
-      !tree.some((category) => category.entityId === delta.matchId),
-  );
-
   return (
     <div className={['ges-eval-header', scrollBehavior === 'sticky' ? 'ges-eval-header--sticky' : '', className].filter(Boolean).join(' ')}>
       <header>
-        <div className="ges-eval-header__utility"><Actions actions={{ ...effectiveActions, showBooth: false, showCart: false, showSearch: false }} /></div>
+        <div className="ges-eval-header__utility">
+          <Actions
+            actions={{
+              ...effectiveActions,
+              showBooth: false,
+              showCart: false,
+              showSearch: false,
+            }}
+          />
+        </div>
         <div className="ges-eval-header__main">
           <Logo {...logo} />
           <DesktopMenu nodes={nodes} />
-          <div className="ges-eval-header__main-actions"><Actions actions={{ ...effectiveActions, showLocale: false, showAccount: false, showContact: false }} /></div>
+          <div className="ges-eval-header__main-actions">
+            <Actions
+              actions={{
+                ...effectiveActions,
+                showLocale: false,
+                showAccount: false,
+                showContact: false,
+              }}
+            />
+          </div>
           <MobileMenu actions={effectiveActions} nodes={nodes} />
         </div>
         <div aria-live="polite" className="ges-eval-header__source-status">
-          {status === 'loading' && (catalog.loadingLabel || 'Loading products…')}
+          {status === 'loading' && 'Loading navigation…'}
           {status === 'error' && 'Static navigation only — catalog unavailable'}
-          {status === 'ready' && tree.length === 0 && (catalog.emptyLabel || 'Products')}
+          {status === 'ready' && tree.length === 0 && 'No eligible product categories'}
         </div>
       </header>
-      {isInBuilder && (
-        <aside className="ges-eval-header__editor-help">
-          <div>
-            <strong>API categories available for editing</strong>
-            <span>Copy an ID into “Edit or hide API categories.”</span>
-          </div>
-          <ul>
-            {tree.map((category) => (
-              <li key={category.entityId}>
-                <span>{category.name}</span>
-                <code>BC ID {category.entityId}</code>
-              </li>
-            ))}
-          </ul>
-          {unmatchedDeltas.length > 0 && (
-            <p role="alert">
-              No loaded API category matches:{' '}
-              {unmatchedDeltas.map((delta) => delta.matchId).join(', ')}. Check the IDs above.
-            </p>
-          )}
-          <small>
-            Rename or remove an API category using its ID. To create a new top-level link, use
-            “Add new menu items / static pages.”
-          </small>
-        </aside>
-      )}
     </div>
   );
 }
