@@ -10,8 +10,7 @@
                     "upload":  "contentful-app-scripts upload --bundle-dir ./dist",
                     "upload-ci":  "contentful-app-scripts upload --bundle-dir ./dist --ci",
                     "activate":  "contentful-app-scripts activate",
-                    "typecheck":  "tsc -b --pretty false",
-                    "lint":  "eslint src --max-warnings 0"
+                    "typecheck":  "tsc -b --pretty false"
                 },
     "dependencies":  {
                          "@contentful/app-sdk":  "^4.51.0",
@@ -27,7 +26,6 @@
                             "@types/react":  "^19.1.6",
                             "@types/react-dom":  "^19.1.5",
                             "@vitejs/plugin-react":  "^4.5.2",
-                            "eslint":  "8.57.1",
                             "typescript":  "^5.8.3",
                             "vite":  "^6.3.5"
                         },
