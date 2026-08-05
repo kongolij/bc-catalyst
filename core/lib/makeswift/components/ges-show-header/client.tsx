@@ -2,7 +2,9 @@
 
 import { ChevronDown, ChevronRight, Languages, Menu, Search, ShoppingCart, Store, UserRound, X } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import styles from './styles.module.css';
 
 interface CategoryNode {
   entityId: number;
@@ -69,6 +71,7 @@ interface Props {
   };
   staticItems?: StaticItem[];
   appearance?: { backgroundColor?: string };
+  layout?: { overflowMode?: 'automatic' | 'show-all'; overflowLabel?: string };
   actions?: {
     showLocale?: boolean;
     showAccount?: boolean;
@@ -107,14 +110,110 @@ function Logo({ image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Prop
   );
 }
 
-function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
-  const [openKey, setOpenKey] = useState<string | null>(null);
-  const [activeColumn, setActiveColumn] = useState(0);
+function OverflowMenu({ label, nodes }: { label: string; nodes: MenuNode[] }) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeNode = nodes[activeIndex] ?? nodes[0];
 
   return (
-    <nav aria-label="Primary navigation" className="ges-eval-header__desktop-nav">
+    <li className={styles.overflowItem} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <div className="ges-eval-header__top-link-row">
+        <button aria-expanded={open} className="ges-eval-header__top-link" onClick={() => setOpen((current) => !current)} type="button">
+          {label} <ChevronDown aria-hidden size={15} />
+        </button>
+      </div>
+      {open && activeNode && (
+        <div className="ges-eval-header__mega-menu">
+          <div className="ges-eval-header__mega-list">
+            <div className="ges-eval-header__eyebrow">More navigation</div>
+            {nodes.map((node, index) => (
+              <button className={index === activeIndex ? 'is-active' : ''} key={node.key} onFocus={() => setActiveIndex(index)} onMouseEnter={() => setActiveIndex(index)} type="button">
+                <span>{node.label}</span>
+                <ChevronRight aria-hidden size={16} />
+              </button>
+            ))}
+          </div>
+          <div className="ges-eval-header__mega-detail">
+            <div className="ges-eval-header__eyebrow">{activeNode.label}</div>
+            {activeNode.href && <Link href={activeNode.href}>View all {activeNode.label}</Link>}
+            {activeNode.columns.map((column) => (
+              <div className={styles.overflowGroup} key={`${activeNode.key}-${column.label}`}>
+                {column.href ? <Link href={column.href}>{column.label}</Link> : <strong>{column.label}</strong>}
+                {column.links.map((link) => (
+                  <Link href={link.href} key={`${column.label}-${link.label}-${link.href}`} rel={link.newTab ? 'noopener noreferrer' : undefined} target={link.newTab ? '_blank' : undefined}>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
+
+function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic' }: { nodes: MenuNode[]; overflowLabel?: string; overflowMode?: 'automatic' | 'show-all' }) {
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [activeColumn, setActiveColumn] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(nodes.length);
+  const navRef = useRef<HTMLElement>(null);
+  const measurementRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (overflowMode === 'show-all') {
+      setVisibleCount(nodes.length);
+      return;
+    }
+
+    const nav = navRef.current;
+    const measurement = measurementRef.current;
+    if (!nav || !measurement) return;
+
+    const measure = () => {
+      const itemWidths = Array.from(measurement.querySelectorAll<HTMLElement>('[data-menu-item]')).map((item) => item.offsetWidth + 2);
+      const moreWidth = measurement.querySelector<HTMLElement>('[data-more-item]')?.offsetWidth ?? 72;
+      const available = nav.clientWidth;
+      const total = itemWidths.reduce((sum, width) => sum + width, 0);
+
+      if (total <= available) {
+        setVisibleCount(nodes.length);
+        return;
+      }
+
+      const budget = Math.max(0, available - moreWidth);
+      let used = 0;
+      let nextVisibleCount = 0;
+      for (const width of itemWidths) {
+        if (used + width > budget) break;
+        used += width;
+        nextVisibleCount += 1;
+      }
+      setVisibleCount(nextVisibleCount);
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    void document.fonts?.ready.then(measure);
+    measure();
+
+    return () => observer.disconnect();
+  }, [nodes, overflowLabel, overflowMode]);
+
+  const effectiveVisibleCount = overflowMode === 'show-all' ? nodes.length : Math.min(visibleCount, nodes.length);
+  const visibleNodes = nodes.slice(0, effectiveVisibleCount);
+  const overflowNodes = nodes.slice(effectiveVisibleCount);
+
+  return (
+    <nav aria-label="Primary navigation" className={`ges-eval-header__desktop-nav ${styles.desktopNav}`} ref={navRef}>
+      <div aria-hidden className={styles.measurement} ref={measurementRef}>
+        {nodes.map((node) => (
+          <span data-menu-item key={node.key}>{node.label}<ChevronDown size={15} /></span>
+        ))}
+        <span data-more-item>{overflowLabel}<ChevronDown size={15} /></span>
+      </div>
       <ul>
-        {nodes.map((node) => {
+        {visibleNodes.map((node) => {
           const open = node.key === openKey;
           const hasChildren = node.columns.length > 0;
           const column = node.columns[activeColumn] ?? node.columns[0];
@@ -164,6 +263,7 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
             </li>
           );
         })}
+        {overflowNodes.length > 0 && <OverflowMenu label={overflowLabel} nodes={overflowNodes} />}
       </ul>
     </nav>
   );
@@ -288,7 +388,7 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
   );
 }
 
-export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, appearance = {}, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
+export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, appearance = {}, layout = {}, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -466,7 +566,7 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
         </div>
         <div className="ges-eval-header__main">
           <Logo {...logo} />
-          <DesktopMenu nodes={nodes} />
+          <DesktopMenu nodes={nodes} overflowLabel={layout.overflowLabel} overflowMode={layout.overflowMode} />
           <div className="ges-eval-header__main-actions">
             <Actions
               actions={{

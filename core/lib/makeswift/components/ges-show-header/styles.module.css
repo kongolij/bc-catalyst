@@ -1,0 +1,46 @@
+.desktopNav {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.measurement {
+  position: absolute;
+  width: max-content;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.measurement > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px 10px 13px;
+  font: 650 0.9rem/1.2 var(--ges-font-head, Arial, sans-serif);
+  white-space: nowrap;
+}
+
+.overflowGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.overflowItem :global(.ges-eval-header__mega-menu) {
+  right: 0;
+  left: auto;
+}
+
+.overflowGroup a,
+.overflowGroup strong {
+  color: var(--ges-header-deep);
+  text-decoration: none;
+}
+
+.overflowGroup > a:not(:first-child) {
+  padding-left: 12px;
+  font-size: 0.875rem;
+}
