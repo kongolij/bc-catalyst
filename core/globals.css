@@ -697,6 +697,9 @@ a.ges-nav__leaf:hover {
   background: linear-gradient(135deg, var(--ges-header-lime), #f4b840);
   font-size: 1.5rem;
 }
+.ges-eval-header__desktop-nav {
+  min-width: 0;
+}
 .ges-eval-header__desktop-nav > ul {
   display: flex;
   align-items: stretch;
@@ -704,6 +707,8 @@ a.ges-nav__leaf:hover {
   margin: 0;
   padding: 0;
   list-style: none;
+  flex-wrap: nowrap;
+  max-width: 100%;
 }
 .ges-eval-header__desktop-nav > ul > li {
   position: relative;
@@ -788,6 +793,8 @@ a.ges-nav__leaf:hover {
   align-items: center;
   gap: 10px;
   color: var(--ges-header-deep);
+  min-width: 0;
+  flex-shrink: 0;
 }
 .ges-eval-header__booth {
   min-height: 42px;

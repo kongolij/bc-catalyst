@@ -71,7 +71,6 @@ interface Props {
   };
   staticItems?: StaticItem[];
   appearance?: { backgroundColor?: string };
-  layout?: { overflowMode?: 'automatic' | 'show-all'; overflowLabel?: string };
   actions?: {
     showLocale?: boolean;
     showAccount?: boolean;
@@ -155,7 +154,9 @@ function OverflowMenu({ label, nodes }: { label: string; nodes: MenuNode[] }) {
   );
 }
 
-function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic' }: { nodes: MenuNode[]; overflowLabel?: string; overflowMode?: 'automatic' | 'show-all' }) {
+const OVERFLOW_LABEL = 'More';
+
+function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [activeColumn, setActiveColumn] = useState(0);
   const [visibleCount, setVisibleCount] = useState(nodes.length);
@@ -163,11 +164,6 @@ function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic'
   const measurementRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    if (overflowMode === 'show-all') {
-      setVisibleCount(nodes.length);
-      return;
-    }
-
     const nav = navRef.current;
     const measurement = measurementRef.current;
     if (!nav || !measurement) return;
@@ -175,7 +171,7 @@ function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic'
     const measure = () => {
       const itemWidths = Array.from(measurement.querySelectorAll<HTMLElement>('[data-menu-item]')).map((item) => item.offsetWidth + 2);
       const moreWidth = measurement.querySelector<HTMLElement>('[data-more-item]')?.offsetWidth ?? 72;
-      const available = nav.clientWidth;
+      const available = Math.max(0, nav.clientWidth - 8);
       const total = itemWidths.reduce((sum, width) => sum + width, 0);
 
       if (total <= available) {
@@ -196,13 +192,15 @@ function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic'
 
     const observer = new ResizeObserver(measure);
     observer.observe(nav);
+    const main = nav.closest<HTMLElement>('.ges-eval-header__main');
+    if (main) observer.observe(main);
     void document.fonts?.ready.then(measure);
     measure();
 
     return () => observer.disconnect();
-  }, [nodes, overflowLabel, overflowMode]);
+  }, [nodes]);
 
-  const effectiveVisibleCount = overflowMode === 'show-all' ? nodes.length : Math.min(visibleCount, nodes.length);
+  const effectiveVisibleCount = Math.min(visibleCount, nodes.length);
   const visibleNodes = nodes.slice(0, effectiveVisibleCount);
   const overflowNodes = nodes.slice(effectiveVisibleCount);
 
@@ -212,7 +210,7 @@ function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic'
         {nodes.map((node) => (
           <span data-menu-item key={node.key}>{node.label}<ChevronDown size={15} /></span>
         ))}
-        <span data-more-item>{overflowLabel}<ChevronDown size={15} /></span>
+        <span data-more-item>{OVERFLOW_LABEL}<ChevronDown size={15} /></span>
       </div>
       <ul>
         {visibleNodes.map((node) => {
@@ -265,7 +263,7 @@ function DesktopMenu({ nodes, overflowLabel = 'More', overflowMode = 'automatic'
             </li>
           );
         })}
-        {overflowNodes.length > 0 && <OverflowMenu label={overflowLabel} nodes={overflowNodes} />}
+        {overflowNodes.length > 0 && <OverflowMenu label={OVERFLOW_LABEL} nodes={overflowNodes} />}
       </ul>
     </nav>
   );
@@ -390,7 +388,7 @@ function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullabl
   );
 }
 
-export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, appearance = {}, layout = {}, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
+export function GesShowHeaderClient({ className, logo = {}, catalog = {}, staticItems, appearance = {}, actions = {}, demoBrand = {}, scrollBehavior = 'static' }: Props) {
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -568,7 +566,7 @@ export function GesShowHeaderClient({ className, logo = {}, catalog = {}, static
         </div>
         <div className="ges-eval-header__main">
           <Logo {...logo} />
-          <DesktopMenu nodes={nodes} overflowLabel={layout.overflowLabel} overflowMode={layout.overflowMode} />
+          <DesktopMenu nodes={nodes} />
           <div className="ges-eval-header__main-actions">
             <Actions
               actions={{

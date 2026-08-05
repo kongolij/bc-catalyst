@@ -193,20 +193,6 @@ runtime.registerComponent(GesShowHeaderClient, {
         backgroundColor: Color({ label: 'Navigation background color', defaultValue: '#ffffff' }),
       },
     }),
-    layout: Group({
-      label: 'Navigation layout',
-      props: {
-        overflowMode: Select({
-          label: 'When navigation runs out of space',
-          options: [
-            { value: 'automatic', label: 'Move extra items into More (recommended)' },
-            { value: 'show-all', label: 'Show every item in the main row' },
-          ],
-          defaultValue: 'automatic',
-        }),
-        overflowLabel: TextInput({ label: 'Overflow menu label', defaultValue: 'More' }),
-      },
-    }),
     actions: Group({
       label: 'Header right side',
       props: {
