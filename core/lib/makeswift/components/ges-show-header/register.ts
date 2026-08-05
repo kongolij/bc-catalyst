@@ -66,7 +66,8 @@ runtime.registerComponent(GesShowHeaderClient, {
       label: 'Logo',
       preferredLayout: 'makeswift::controls::group::layout::popover',
       props: {
-        image: Image({ label: 'Logo image' }),
+        useDefault: Checkbox({ label: 'Use default GES logo', defaultValue: true }),
+        image: Image({ label: 'Custom logo image' }),
         alt: TextInput({ label: 'Alt text', defaultValue: 'GES' }),
         text: TextInput({ label: 'Fallback text', defaultValue: 'GES' }),
         href: TextInput({ label: 'Home link', defaultValue: '/' }),
