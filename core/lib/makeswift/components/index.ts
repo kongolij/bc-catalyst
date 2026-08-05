@@ -77,6 +77,7 @@ import './ges-show-header/register';
 import './ges-show-footer/register';
 import './ges-composable-footer/register';
 import './ges-date-picker/register';
+import './ges-welcome-message/register';
 import './ges-static-nav/register';
 import './ges-header-nav/register';
 import './ges-show-timeline/register';
