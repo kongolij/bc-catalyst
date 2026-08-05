@@ -32,25 +32,30 @@ runtime.registerComponent(GesShowHeaderClient, {
           defaultValue: 'Products',
         }),
         overrides: List({
-          label: 'Category deltas',
+          label: 'Edit or hide API categories',
           type: Group({
-            label: 'Category delta',
+            label: 'API category edit',
             props: {
-              matchId: Number({ label: 'BC category entityId', defaultValue: 0 }),
-              hide: Checkbox({ label: 'Hide eligible category', defaultValue: false }),
-              renameLabel: TextInput({ label: 'Display label override', defaultValue: '' }),
+              matchId: Number({ label: 'BC category ID (copy from preview)', defaultValue: 0 }),
+              hide: Checkbox({ label: 'Remove this category from the menu', defaultValue: false }),
+              renameLabel: TextInput({
+                label: 'New menu name (blank keeps BC name)',
+                defaultValue: '',
+              }),
               order: Number({ label: 'Order override (blank/0 = API order)', defaultValue: 0 }),
             },
           }),
           getItemLabel: (item: { renameLabel?: string; matchId?: number }) =>
             item?.renameLabel
               ? `${item.renameLabel} (id ${item.matchId ?? 0})`
-              : `BC category ${item?.matchId ?? 0}`,
+              : item?.matchId
+                ? `BC category ${item.matchId}`
+                : 'Set a BC category ID',
         }),
       },
     }),
     staticItems: List({
-      label: 'Static page menu',
+      label: 'Add new menu items / static pages',
       type: Group({
         label: 'Static menu item',
         props: {

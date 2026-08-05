@@ -863,6 +863,50 @@ a.ges-nav__leaf:hover {
   color: #6f7f88;
   font-size: 0.625rem;
 }
+.ges-eval-header__editor-help {
+  padding: 12px 18px;
+  border: 1px dashed #8ba0ac;
+  border-top: 0;
+  background: #f5f8f9;
+  color: var(--ges-header-deep);
+  font-size: 0.78rem;
+}
+.ges-eval-header__editor-help > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ges-eval-header__editor-help > div > span,
+.ges-eval-header__editor-help small {
+  color: #536975;
+}
+.ges-eval-header__editor-help ul {
+  margin: 9px 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+.ges-eval-header__editor-help li {
+  padding: 5px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #c6d1d6;
+  border-radius: 3px;
+  background: #fff;
+}
+.ges-eval-header__editor-help code {
+  color: #16768d;
+  font-weight: 700;
+}
+.ges-eval-header__editor-help p {
+  margin: 8px 0;
+  color: #a82828;
+  font-weight: 650;
+}
 .ges-eval-header__mobile {
   display: none;
 }
