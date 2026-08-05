@@ -64,7 +64,7 @@ interface MenuNode {
 
 interface Props {
   className?: string;
-  logo?: { useDefault?: boolean; image?: string; alt?: string; text?: string; href?: string };
+  logo?: { source?: 'default' | 'custom'; image?: string; alt?: string; text?: string; href?: string };
   catalog?: {
     overrides?: CategoryOverride[];
     additions?: CategoryAddition[];
@@ -101,8 +101,8 @@ const getCategoryId = (value: CategoryOverride['matchId'] | CategoryAddition['pa
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 };
 
-function Logo({ useDefault = true, image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Props['logo']>) {
-  const effectiveImage = useDefault ? '/ges-logo.svg' : image;
+function Logo({ source = 'default', image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Props['logo']>) {
+  const effectiveImage = source === 'default' ? '/ges-logo.svg' : image;
 
   return (
     <Link aria-label="Home" className="ges-eval-header__logo" href={href}>
