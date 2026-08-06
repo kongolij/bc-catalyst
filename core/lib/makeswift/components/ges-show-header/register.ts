@@ -4,6 +4,8 @@ import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesShowHeaderClient } from './client';
 
+export const GES_SHOW_HEADER_COMPONENT_TYPE = 'ges-show-header-evaluation';
+
 interface CategoryOptionNode {
   entityId: number;
   name: string;
@@ -56,7 +58,7 @@ const fetchEditableCategoryOptions = (query: string) => fetchFeaturedCategoryOpt
 const fetchCategoryParentOptions = (query: string) => fetchFeaturedCategoryOptions(query, 2);
 
 runtime.registerComponent(GesShowHeaderClient, {
-  type: 'ges-show-header-evaluation',
+  type: GES_SHOW_HEADER_COMPONENT_TYPE,
   label: 'GES / Navigation / Show Header (API + delta)',
   description: 'Evaluation header: featured-product BC categories + small editorial deltas + static page navigation.',
   icon: 'navigation',
