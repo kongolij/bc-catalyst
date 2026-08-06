@@ -34,6 +34,7 @@ import './products-carousel/register';
 import './product-detail/register';
 import './self-hydrating-product-detail/register';
 import './catalyst-product-detail/register';
+import './catalyst-product-listing/register';
 import './cart-slot/register';
 import './category-list/register';
 
