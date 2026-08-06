@@ -3,6 +3,10 @@ import { setRequestLocale } from 'next-intl/server';
 import { PropsWithChildren } from 'react';
 
 import { MakeswiftProvider } from '~/components/makeswift/provider';
+import {
+  GlobalGesFooter,
+  GlobalGesHeader,
+} from '~/lib/makeswift/components/ges-global-chrome';
 
 interface Props extends PropsWithChildren {
   params: Promise<{ locale: string }>;
@@ -15,7 +19,9 @@ export default async function DefaultLayout({ params, children }: Props) {
 
   return (
     <MakeswiftProvider siteVersion={await getSiteVersion()}>
+      <GlobalGesHeader />
       <main>{children}</main>
+      <GlobalGesFooter />
     </MakeswiftProvider>
   );
 }

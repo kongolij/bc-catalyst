@@ -15,6 +15,8 @@ import { runtime } from '~/lib/makeswift/runtime';
 
 import { GesComposableFooterClient } from './client';
 
+export const GES_COMPOSABLE_FOOTER_COMPONENT_TYPE = 'ges-composable-footer';
+
 const editableLink = Group({
   label: 'Link',
   props: {
@@ -24,7 +26,7 @@ const editableLink = Group({
 });
 
 runtime.registerComponent(GesComposableFooterClient, {
-  type: 'ges-composable-footer',
+  type: GES_COMPOSABLE_FOOTER_COMPONENT_TYPE,
   label: 'GES / Navigation / Composable Footer',
   description:
     'Two-row footer: left/center/right navigation regions on top, code-owned logo + legal + contact row below. Ships with the current GES footer as its default.',
