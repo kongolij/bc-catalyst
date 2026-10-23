@@ -83,6 +83,7 @@ import './ges-static-nav/register';
 import './ges-header-nav/register';
 import './ges-show-timeline/register';
 import './ges-inline-banner/register';
+import './ges-show-link-demo/register';
 import './ges-split-banner/register';
 import './ges-shipping-links/register';
 import './ges-important-dates/register';
