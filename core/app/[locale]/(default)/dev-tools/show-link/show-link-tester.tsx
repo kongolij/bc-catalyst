@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getCookieValue } from '~/lib/client-cookies';
 import { useShowLink } from '~/lib/show-link/use-show-link';
@@ -88,6 +88,10 @@ export function ShowLinkTester({ initialShow }: { initialShow: string }) {
   const [source, setSource] = useState<Source>('prop');
   // Bumped after a cookie change so the hook reads the cookie again.
   const [version, setVersion] = useState(0);
+  const [cookie, setCookieShown] = useState<string | null>(null);
+
+  // Read after mount: document is not available on the server.
+  useEffect(() => setCookieShown(getCookieValue('project_code')), [version]);
 
   const setCookie = (value: string | null) => {
     document.cookie = value
@@ -117,8 +121,8 @@ export function ShowLinkTester({ initialShow }: { initialShow: string }) {
           Clear cookie
         </button>
       </div>
-      <p key={version} style={{ color: '#6b7280', marginTop: 8 }}>
-        Cookie project_code: {getCookieValue('project_code') ?? '(not set)'}
+      <p style={{ color: '#6b7280', marginTop: 8 }}>
+        Cookie project_code: {cookie ?? '(not set)'}
       </p>
 
       <Results key={version} projectCode={source === 'prop' ? show : null} />
