@@ -40,30 +40,32 @@ interface StaticGroup {
   links?: StaticLink[];
 }
 
-interface StaticItem {
+export interface StaticItem {
   label?: string;
   href?: string;
   position?: 'before' | 'after';
   groups?: StaticGroup[];
 }
 
-interface MenuColumn {
+export interface MenuColumn {
   label: string;
   href?: string;
+  newTab?: boolean;
   links: Array<{ label: string; href: string; newTab?: boolean }>;
 }
 
-interface MenuNode {
+export interface MenuNode {
   key: string;
   label: string;
   href?: string;
+  newTab?: boolean;
   columns: MenuColumn[];
   source: 'api' | 'makeswift' | 'demo';
   order?: number;
   apiIndex: number;
 }
 
-interface Props {
+export interface Props {
   className?: string;
   logo?: { source?: 'default' | 'custom'; image?: string; alt?: string; text?: string; href?: string };
   catalog?: {
@@ -101,7 +103,7 @@ const getCategoryId = (value: CategoryOverride['matchId'] | CategoryAddition['pa
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 };
 
-function Logo({ source = 'default', image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Props['logo']>) {
+export function Logo({ source = 'default', image, alt = 'GES', text = 'GES', href = '/' }: NonNullable<Props['logo']>) {
   const effectiveImage = source === 'default' ? '/ges-logo.svg' : image;
 
   return (
@@ -157,7 +159,7 @@ function OverflowMenu({ label, nodes }: { label: string; nodes: MenuNode[] }) {
 
 const OVERFLOW_LABEL = 'More';
 
-function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
+export function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
   const isInBuilder = useIsInBuilder();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [activeColumn, setActiveColumn] = useState(0);
@@ -235,7 +237,7 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
               onMouseLeave={() => setOpenKey(null)}
             >
               <div className="ges-eval-header__top-link-row">
-                <Link className="ges-eval-header__top-link" href={node.href ?? '#'}>
+                <Link className="ges-eval-header__top-link" href={node.href ?? '#'} rel={node.newTab ? 'noopener noreferrer' : undefined} target={node.newTab ? '_blank' : undefined}>
                   {node.label}
                 </Link>
                 {hasChildren && (
@@ -258,7 +260,11 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
                   </div>
                   <div className="ges-eval-header__mega-detail">
                     <div className="ges-eval-header__eyebrow">{column?.label}</div>
-                    {column?.href && <Link href={column.href}>View all {column.label}</Link>}
+                    {column?.href && (
+                      <Link href={column.href} rel={column.newTab ? 'noopener noreferrer' : undefined} target={column.newTab ? '_blank' : undefined}>
+                        View all {column.label}
+                      </Link>
+                    )}
                     {column?.links.map((link) => (
                       <Link href={link.href} key={`${column.label}-${link.label}-${link.href}`} rel={link.newTab ? 'noopener noreferrer' : undefined} target={link.newTab ? '_blank' : undefined}>
                         {link.label}
@@ -276,7 +282,7 @@ function DesktopMenu({ nodes }: { nodes: MenuNode[] }) {
   );
 }
 
-function Actions({ actions, mobile = false }: { actions: NonNullable<Props['actions']>; mobile?: boolean }) {
+export function Actions({ actions, mobile = false }: { actions: NonNullable<Props['actions']>; mobile?: boolean }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const actionClass = mobile ? 'ges-eval-header__mobile-action' : 'ges-eval-header__utility-link';
 
@@ -329,7 +335,7 @@ function Actions({ actions, mobile = false }: { actions: NonNullable<Props['acti
   );
 }
 
-function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullable<Props['actions']> }) {
+export function MobileMenu({ nodes, actions }: { nodes: MenuNode[]; actions: NonNullable<Props['actions']> }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
 
