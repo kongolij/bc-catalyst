@@ -74,6 +74,7 @@ import './ges-category-grid-override/register';
 import './ges-catalog-nav/register';
 import './ges-site-header/register';
 import './ges-show-header/register';
+import './ges-showapp-header/register';
 import './ges-show-footer/register';
 import './ges-composable-footer/register';
 import './ges-date-picker/register';
