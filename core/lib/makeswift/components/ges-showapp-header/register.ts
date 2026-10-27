@@ -1,4 +1,4 @@
-import { Checkbox, Color, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
+import { Checkbox, Color, Combobox, Group, Image, List, Number, Select, Style, TextInput } from '@makeswift/runtime/controls';
 
 import { runtime } from '~/lib/makeswift/runtime';
 
@@ -8,11 +8,42 @@ export const GES_SHOWAPP_HEADER_COMPONENT_TYPE = 'ges-showapp-header';
 
 const link = (label: string, defaultValue: string) => TextInput({ label, defaultValue });
 
+interface OptionNode {
+  entityId: number;
+  name: string;
+  children?: OptionNode[];
+}
+
+const flatten = (nodes: OptionNode[], parents: string[] = []): Array<{ id: string; label: string; value: string }> =>
+  nodes.flatMap((node) => {
+    const breadcrumb = [...parents, node.name];
+
+    return [
+      { id: String(node.entityId), label: `${breadcrumb.join(' › ')} (BC ${node.entityId})`, value: String(node.entityId) },
+      ...flatten(node.children ?? [], breadcrumb),
+    ];
+  });
+
+// Delta pickers list the Show App navigation (the first show: Makeswift option lookups can't read the project prop).
+async function fetchShowAppCategoryOptions(query: string) {
+  try {
+    const response = await fetch('/api/showapp/nav-tree');
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as { tree?: OptionNode[] };
+    const search = query.trim().toLowerCase();
+
+    return flatten(data.tree ?? []).filter((option) => !search || option.label.toLowerCase().includes(search));
+  } catch {
+    return [];
+  }
+}
+
 runtime.registerComponent(GesShowAppHeaderClient, {
   type: GES_SHOWAPP_HEADER_COMPONENT_TYPE,
-  label: 'GES / Navigation / Show Header (Show App)',
+  label: 'GES / Navigation / Show Header (Show App + delta)',
   description:
-    'Header whose commerce menu comes from the Show App (show DB + BC): display names, hidden categories, CMS links and dates are managed there.',
+    'Header whose commerce menu comes from the Show App (show DB + BC): display names, hidden categories, CMS links and dates are managed there, plus small Makeswift deltas.',
   icon: 'navigation',
   props: {
     className: Style(),
@@ -38,6 +69,41 @@ runtime.registerComponent(GesShowAppHeaderClient, {
         alt: TextInput({ label: 'Alt text', defaultValue: 'GES' }),
         text: TextInput({ label: 'Fallback text', defaultValue: 'GES' }),
         href: link('Home link', '/'),
+      },
+    }),
+    catalog: Group({
+      label: 'Commerce menu — Show App + delta',
+      props: {
+        overrides: List({
+          label: 'Rename, hide, or reorder categories',
+          type: Group({
+            label: 'Category change',
+            props: {
+              matchId: Combobox({ label: 'Search the show navigation', getOptions: fetchShowAppCategoryOptions }),
+              hide: Checkbox({ label: 'Hide from header', defaultValue: false }),
+              renameLabel: TextInput({ label: 'Header name (blank keeps Show App name)', defaultValue: '' }),
+              order: Number({ label: 'Menu order (blank/0 keeps Show App order)', defaultValue: 0 }),
+            },
+          }),
+          getItemLabel: (item) => {
+            if (item?.renameLabel) return item.renameLabel;
+            if (item?.matchId && typeof item.matchId === 'object') return item.matchId.label || 'Selected category';
+            return item?.matchId ? `BC category ${item.matchId}` : 'Choose a category';
+          },
+        }),
+        additions: List({
+          label: 'Add links beneath show categories',
+          type: Group({
+            label: 'New category link',
+            props: {
+              parentId: Combobox({ label: 'Search and select a parent category', getOptions: fetchShowAppCategoryOptions }),
+              label: TextInput({ label: 'New link name', defaultValue: 'New link' }),
+              href: link('Link URL', ''),
+              order: Number({ label: 'Order (blank/0 places it last)', defaultValue: 0 }),
+            },
+          }),
+          getItemLabel: (item) => item?.label || 'New category link',
+        }),
       },
     }),
     staticItems: List({
