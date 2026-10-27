@@ -14,14 +14,14 @@ interface CategoryNode {
   children?: CategoryNode[];
 }
 
-interface CategoryOverride {
+export interface CategoryOverride {
   matchId?: number | string | { value?: string };
   hide?: boolean;
   renameLabel?: string;
   order?: number;
 }
 
-interface CategoryAddition {
+export interface CategoryAddition {
   parentId?: number | string | { value?: string };
   label?: string;
   href?: string;
@@ -96,7 +96,7 @@ export interface Props {
 }
 
 const categoryHref = (path: string) => `/category${path.startsWith('/') ? path : `/${path}`}`;
-const getCategoryId = (value: CategoryOverride['matchId'] | CategoryAddition['parentId']) => {
+export const getCategoryId = (value: CategoryOverride['matchId'] | CategoryAddition['parentId']) => {
   const rawValue = typeof value === 'object' ? value?.value : value;
   const parsed = Number(rawValue);
 
