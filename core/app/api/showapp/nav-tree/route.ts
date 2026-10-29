@@ -12,7 +12,7 @@ import { graphql } from '~/client/graphql';
 // name = the show's display name, else the BigCommerce name; path = the category's BigCommerce path, unless the item
 // has its own link (CMS url, content page). So a rename in BigCommerce shows without a Show App rebuild, and a
 // category hidden or deleted in BigCommerce since the last build is left out with its branch.
-// If BigCommerce can't be read, the names and paths captured at the last build (show_navigation.bc_labels) are used.
+// If BigCommerce can't be read, the request fails (502), as it does when the Show App DB can't be read.
 // Menus stored before the Show App stopped storing names still carry name / href on every item; those are used as
 // stored until the next rebuild.
 // Same shape as /api/bc/nav-tree: { tree: [{ entityId, name, path, newTab, children }] }.
@@ -103,15 +103,15 @@ async function liveLabels(): Promise<Labels> {
 const inWindow = (item: StoredNavItem, today: string) => (!item.start || today >= item.start) && (!item.end || today <= item.end);
 
 // Outside its date window: hidden with its branch (as the Show App does). Items without dates have no start/end.
-// strict (live labels): a BigCommerce category missing from this channel's tree is hidden with its branch.
-// Custom categories (negative ids) are not in BigCommerce and keep their own name and link.
-const toTree = (items: StoredNavItem[], today: string, labels: Labels, strict: boolean): TreeNode[] =>
+// A BigCommerce category missing from this channel's tree is hidden with its branch. Custom categories (negative ids)
+// are not in BigCommerce and keep their own name and link.
+const toTree = (items: StoredNavItem[], today: string, labels: Labels): TreeNode[] =>
   items.flatMap((item) => {
     if (!inWindow(item, today)) return [];
 
     const bc = item.id > 0 ? labels.get(item.id) : undefined;
 
-    if (strict && item.id > 0 && !bc) return [];
+    if (item.id > 0 && !bc) return [];
 
     return [
       {
@@ -119,14 +119,13 @@ const toTree = (items: StoredNavItem[], today: string, labels: Labels, strict: b
         name: item.name ?? item.displayName ?? bc?.name ?? `Category ${item.id}`,
         path: (item.href !== undefined ? item.href : bc?.path) ?? '#',
         newTab: item.newTab,
-        children: toTree(item.children, today, labels, strict),
+        children: toTree(item.children, today, labels),
       },
     ];
   });
 
 interface ShowNavRow {
   navigation: StoredNavItem[] | null;
-  bc_labels: Record<string, { name: string; path: string | null }> | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -141,35 +140,29 @@ export async function GET(request: NextRequest) {
 
   try {
     const sql = neon(url);
-    const [rows, live] = await Promise.all([
+    const [rows, labels] = await Promise.all([
       sql`
-        SELECT n.navigation, n.bc_labels
+        SELECT n.navigation
         FROM show_instances s
         LEFT JOIN show_navigation n ON n.show_id = s.id
         WHERE s.store_hash = ${store} AND (${project}::text IS NULL OR s.project_number = ${project})
         ORDER BY s.id
         LIMIT 1
       `,
-      liveLabels().catch((error: unknown) => {
-        console.error('[/api/showapp/nav-tree] BigCommerce category tree', error);
-
-        return null;
-      }),
+      liveLabels(),
     ]);
     const row = (rows as ShowNavRow[])[0];
-    const labels: Labels =
-      live ?? new Map(Object.entries(row?.bc_labels ?? {}).map(([id, label]) => [Number(id), label]));
     const today = new Date().toISOString().slice(0, 10);
 
     return NextResponse.json(
-      { tree: toTree(row?.navigation ?? [], today, labels, live !== null), labels: live ? 'live' : 'snapshot' },
+      { tree: toTree(row?.navigation ?? [], today, labels) },
       // Not cached: a Show App change (switch, rename, new category) shows on the next load. One indexed query plus
       // the BigCommerce tree (cached LABELS_REVALIDATE_SECONDS).
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Show DB request failed', tree: [] },
+      { error: error instanceof Error ? error.message : 'Show DB or BigCommerce request failed', tree: [] },
       { status: 502 },
     );
   }
